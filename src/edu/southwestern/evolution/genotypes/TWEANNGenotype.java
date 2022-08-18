@@ -1,23 +1,42 @@
 package edu.southwestern.evolution.genotypes;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.EvolutionaryHistory;
 import edu.southwestern.evolution.MultiplePopulationGenerationalEA;
-import edu.southwestern.evolution.mutation.tweann.*;
-import edu.southwestern.evolution.nsga2.bd.characterizations.GeneralNetworkCharacterization;
-import edu.southwestern.evolution.nsga2.bd.localcompetition.TWEANNModulesNicheDefinition;
-import edu.southwestern.MMNEAT.MMNEAT;
+import edu.southwestern.evolution.mutation.tweann.ActivationFunctionMutation;
+import edu.southwestern.evolution.mutation.tweann.AllWeightMutation;
+import edu.southwestern.evolution.mutation.tweann.DeleteLinkMutation;
+import edu.southwestern.evolution.mutation.tweann.FullyConnectedModuleMutation;
+import edu.southwestern.evolution.mutation.tweann.MMD;
+import edu.southwestern.evolution.mutation.tweann.MMP;
+import edu.southwestern.evolution.mutation.tweann.MMR;
+import edu.southwestern.evolution.mutation.tweann.MeltThenFreezeAlternateMutation;
+import edu.southwestern.evolution.mutation.tweann.MeltThenFreezePolicyMutation;
+import edu.southwestern.evolution.mutation.tweann.MeltThenFreezePreferenceMutation;
+import edu.southwestern.evolution.mutation.tweann.NewLinkMutation;
+import edu.southwestern.evolution.mutation.tweann.PolynomialWeightMutation;
+import edu.southwestern.evolution.mutation.tweann.SpliceNeuronMutation;
+import edu.southwestern.evolution.mutation.tweann.WeightPurturbationMutation;
 import edu.southwestern.networks.ActivationFunctions;
 import edu.southwestern.networks.TWEANN;
 import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
-import edu.southwestern.util.CartesianGeometricUtilities;
 import edu.southwestern.util.datastructures.ArrayUtil;
 import edu.southwestern.util.random.RandomGenerator;
 import edu.southwestern.util.random.RandomNumbers;
 import edu.southwestern.util.stats.StatisticsUtilities;
-
-import java.io.Serializable;
-import java.util.*;
 
 /**
  * Genotype for a Topology and Weight Evolving Neural Network. Standard genotype
@@ -386,8 +405,6 @@ public class TWEANNGenotype implements NetworkGenotype<TWEANN>, Serializable {
 			this.recurrent = recurrent;
 			this.frozen = frozen;
 			this.moduleSource = moduleSource;
-			// When constructing substrate network, each link must have a particular module as its source.
-			assert !(HyperNEATCPPNGenotype.constructingNetwork && moduleSource == -1) : sourceInnovation + " -> " + targetInnovation + " with weight " + weight + " innovation " + innovation + " active "+ active;
 		}
 
 		@Override
@@ -663,42 +680,6 @@ public class TWEANNGenotype implements NetworkGenotype<TWEANN>, Serializable {
 		assert (moduleUsage != null) : "How did moduleUsage become null? numModules = " + numModules;
 	}
 
-	public double lastModulesDistance() {
-		return twoModulesDistance(numModules - 2, numModules - 1);
-	}
-
-	/**
-	 * Given two modules in the network, use the GeneralNetworkCharacterization
-	 * to determine the distance between their behaviors.
-	 *
-	 * @param m1 module index 1
-	 * @param m2 module index 2
-	 * @return module distance, or max double value if only one module exists
-	 */
-	public double twoModulesDistance(int m1, int m2) {
-		if (numModules == 1) {
-			return Double.MAX_VALUE;
-		} else {
-			ArrayList<double[]> syllabus;
-			if (Parameters.parameters.booleanParameter("rememberObservations")) {
-				syllabus = GeneralNetworkCharacterization.newPastExperiencesSyllabus(CommonConstants.syllabusSize);
-			} else {
-				syllabus = GeneralNetworkCharacterization.newRandomSyllabus(CommonConstants.syllabusSize);
-			}
-			ArrayList<Double> last = new ArrayList<Double>();
-			ArrayList<Double> prev = new ArrayList<Double>();
-			TWEANN t = this.getPhenotype();
-			for (double[] inputs : syllabus) {
-				t.process(inputs);
-				double[] outPrev = t.moduleOutput(m1);
-				double[] outLast = t.moduleOutput(m2);
-				prev.addAll(ArrayUtil.doubleVectorFromArray(outPrev));
-				last.addAll(ArrayUtil.doubleVectorFromArray(outLast));
-			}
-			return CartesianGeometricUtilities.euclideanDistance(prev, last);
-		}
-	}
-
 	/**
 	 * Mutates the existing weights, links, and nodes of a TWEANN
 	 */
@@ -724,12 +705,9 @@ public class TWEANNGenotype implements NetworkGenotype<TWEANN>, Serializable {
 				&& (!CommonConstants.onlyModeMutationWhenModesSame
 						|| EvolutionaryHistory.minModes == EvolutionaryHistory.maxModes)
 				&& // Make sure modes are different
-				(CommonConstants.distanceForNewMode == -1
-				|| CommonConstants.distanceForNewMode < lastModulesDistance())
+				(CommonConstants.distanceForNewMode == -1) // Not used
 				&& // If using niche restriction
-				(!CommonConstants.nicheRestrictionOnModeMutation
-						|| // Only allow new modes if niche with more or equal modes is doing well
-						this.numModules <= TWEANNModulesNicheDefinition.bestHighModeNiche())) {
+				(!CommonConstants.nicheRestrictionOnModeMutation)) { // Not used
 			// System.out.println("In Mode Mutation Block");
 			new MMP().go(this, sb);
 			new MMR().go(this, sb);
@@ -1376,51 +1354,6 @@ public class TWEANNGenotype implements NetworkGenotype<TWEANN>, Serializable {
 			EvolutionaryHistory.archetypeAdd(archetypeIndex, archetypeIndexToAdd, ng.clone(), false, "new output"); // adds at index (for Cascade Expansion)
 		}
 		return addedLinks.size();
-	}
-
-	/**
-	 * adds output neurons to cppn for new substrate connections and biases when a cascade expansion occurs
-	 * @param initialNumSubstratePairs number of substrate pairs before addition of new substrate
-	 * @param numInitialHiddenSubstrates number of hidden substrates in HyperNEAT network
-	 * @param numNewHiddenSubstrates number of new substrates that need new outputs in cppn
-	 * @param ftypes activation functions of new cppn outputs starting with the outputs for the connections between the new substrates
-	 * 		and their leo outputs if applicable then ending with the biases for these new substrates
-	 * @return the number of output neurons that were added to the cppn
-	 */
-	public int addMSSNeuronsToCPPN(int initialNumSubstratePairs, int numInitialHiddenSubstrates, int numOutputsInPhenotype, int numNewHiddenSubstrates, int[] ftypes) {
-		int numInitialCPPNOutputsForSubstratePairs = initialNumSubstratePairs * HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair;
-		//numNewCPPNOutputsForSubstratePairs is dependent on the number of new hidden substrates and the connections of these new substrates 
-		int numNewCPPNOutputsForSubstratePairs = (numNewHiddenSubstrates + numNewHiddenSubstrates * numOutputsInPhenotype) * HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair;
-		int numAdditionalNodes = numNewCPPNOutputsForSubstratePairs + numNewHiddenSubstrates;
-		int numAdditionalLinks = Parameters.parameters.integerParameter("numIncomingLinksForCascadeExpansion");
-		long[] linkInnovations = new long[numAdditionalLinks];
-		long[] sourceInnovations = new long[numAdditionalLinks];
-		double[] weights = new double[numAdditionalLinks];
-		int position = this.outputStartIndex() + numInitialCPPNOutputsForSubstratePairs;
-		int archetypeAddIndex = EvolutionaryHistory.archetypes[archetypeIndex].size() - nodes.size() + position;
-		//adding new outputs for substrate pairs
-		for (int i = 0; i < numNewCPPNOutputsForSubstratePairs; i++) {
-			for (int j = 0; j < numAdditionalLinks; j++) {
-				sourceInnovations[j] = getRandomNonOutputNodeInnovationNumber();
-				linkInnovations[j] = EvolutionaryHistory.nextInnovation();
-				weights[j] = RandomNumbers.fullSmallRand();
-			}
-			addOutputNode(ftypes[i], sourceInnovations, weights, linkInnovations, position + i, false, archetypeAddIndex + i);
-		}
-		//new substrate biases will be inserted after the old hidden substrate biases and before the output substrate biases
-		position += numNewCPPNOutputsForSubstratePairs + numInitialHiddenSubstrates;
-		archetypeAddIndex = EvolutionaryHistory.archetypes[archetypeIndex].size() - nodes.size() + position;
-		//adding new outputs for hidden biases
-		for (int i = 0; i < numNewHiddenSubstrates; i++) {
-			for (int j = 0; j < numAdditionalLinks; j++) {
-				sourceInnovations[j] = getRandomNonOutputNodeInnovationNumber();
-				linkInnovations[j] = EvolutionaryHistory.nextInnovation();
-				weights[j] = RandomNumbers.fullSmallRand();
-			}
-			addOutputNode(ftypes[numNewCPPNOutputsForSubstratePairs + i], sourceInnovations, weights, linkInnovations, position + i, false, archetypeAddIndex + i);
-		}
-		this.neuronsPerModule += numAdditionalNodes;
-		return numAdditionalNodes;
 	}
 
 	/**
