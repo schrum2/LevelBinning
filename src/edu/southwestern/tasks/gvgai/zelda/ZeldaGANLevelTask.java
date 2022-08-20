@@ -7,8 +7,8 @@ import java.util.List;
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.genotypes.Genotype;
 import edu.southwestern.tasks.BoundedTask;
-import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
-import edu.southwestern.tasks.interactive.gvgai.ZeldaGANLevelBreederTask;
+//import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
+//import edu.southwestern.tasks.interactive.gvgai.ZeldaGANLevelBreederTask;
 import edu.southwestern.tasks.mario.gan.GANProcess;
 import edu.southwestern.util.datastructures.ArrayUtil;
 
@@ -25,10 +25,10 @@ public class ZeldaGANLevelTask extends ZeldaLevelTask<ArrayList<Double>> impleme
 		return ZeldaGANUtil.generateOneRoomListRepresentationFromGAN(room);
 	}
 	
-	@Override
-	public GameBundle getBundleFromGenotype(Genotype<ArrayList<Double>> individual) {
-		return ZeldaGANLevelBreederTask.setUpGameWithLevelFromLatentVector(individual.getPhenotype());
-	}
+//	@Override
+//	public GameBundle getBundleFromGenotype(Genotype<ArrayList<Double>> individual) {
+//		return ZeldaGANLevelBreederTask.setUpGameWithLevelFromLatentVector(individual.getPhenotype());
+//	}
 	
 	/**
 	 * For quick testing

@@ -4,15 +4,15 @@ import java.util.List;
 
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.genotypes.Genotype;
-import edu.southwestern.parameters.CommonConstants;
+//import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.tasks.NoisyLonerTask;
-import edu.southwestern.tasks.gvgai.GVGAIUtil;
-import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
+//import edu.southwestern.tasks.gvgai.GVGAIUtil;
+//import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
 import edu.southwestern.tasks.gvgai.zelda.level.ZeldaLevelUtil;
 import edu.southwestern.tasks.mario.gan.GANProcess;
 import edu.southwestern.util.datastructures.Pair;
-import gvgai.core.vgdl.VGDLFactory;
-import gvgai.core.vgdl.VGDLRegistry;
+//import gvgai.core.vgdl.VGDLFactory;
+//import gvgai.core.vgdl.VGDLRegistry;
 
 public abstract class ZeldaLevelTask<T> extends NoisyLonerTask<T> {
 
@@ -22,10 +22,10 @@ public abstract class ZeldaLevelTask<T> extends NoisyLonerTask<T> {
 		MMNEAT.registerFitnessFunction("MaxDistanceEast");
 		MMNEAT.registerFitnessFunction("MaxDistanceWest");
 		
-		if(CommonConstants.watch) {
-			VGDLFactory.GetInstance().init(); // Get an instant of VGDL Factor and initialize the characters cache
-			VGDLRegistry.GetInstance().init(); // Get an instance of VGDL Registry and initialize the sprite factory
-		}
+//		if(CommonConstants.watch) {
+//			VGDLFactory.GetInstance().init(); // Get an instant of VGDL Factor and initialize the characters cache
+//			VGDLRegistry.GetInstance().init(); // Get an instance of VGDL Registry and initialize the sprite factory
+//		}
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ public abstract class ZeldaLevelTask<T> extends NoisyLonerTask<T> {
 	
 	public abstract List<List<Integer>> getZeldaLevelFromGenotype(Genotype<T> individual);
 	
-	public abstract GameBundle getBundleFromGenotype(Genotype<T> individual);
+//	public abstract GameBundle getBundleFromGenotype(Genotype<T> individual);
 	
 	@Override
 	public Pair<double[], double[]> oneEval(Genotype<T> individual, int num) {
@@ -56,10 +56,10 @@ public abstract class ZeldaLevelTask<T> extends NoisyLonerTask<T> {
 		double maxDistanceW = ZeldaLevelUtil.findMaxDistanceOfLevel(level, 2, 6);
 		double maxDistanceE = ZeldaLevelUtil.findMaxDistanceOfLevel(level, 13, 6);
 		
-		if(CommonConstants.watch) {
-			GameBundle bundle = getBundleFromGenotype(individual);
-			GVGAIUtil.runOneGame(bundle, true);
-		}
+//		if(CommonConstants.watch) {
+//			GameBundle bundle = getBundleFromGenotype(individual);
+//			GVGAIUtil.runOneGame(bundle, true);
+//		}
 		
 		return new Pair<double[], double[]>(new double[]{maxDistanceS, maxDistanceN, maxDistanceE, maxDistanceW}, new double[0]);
 	}
