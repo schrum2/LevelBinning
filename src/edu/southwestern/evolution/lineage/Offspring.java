@@ -1,32 +1,10 @@
 package edu.southwestern.evolution.lineage;
 
-import edu.southwestern.evolution.genotypes.Genotype;
-import edu.southwestern.evolution.genotypes.MLPGenotype;
-import edu.southwestern.evolution.genotypes.TWEANNGenotype;
-import edu.southwestern.evolution.mulambda.MuLambda;
-import edu.southwestern.evolution.selectiveBreeding.SelectiveBreedingEA;
-import edu.southwestern.MMNEAT.MMNEAT;
-import edu.southwestern.networks.MLP;
-import edu.southwestern.networks.Network;
-import edu.southwestern.networks.NetworkTask;
-import edu.southwestern.networks.TWEANN;
-import edu.southwestern.parameters.CommonConstants;
-import edu.southwestern.parameters.Parameters;
-import edu.southwestern.scores.Score;
-import edu.southwestern.tasks.LonerTask;
-import edu.southwestern.tasks.interactive.picbreeder.PicbreederTask;
-import edu.southwestern.util.PopulationUtil;
-import edu.southwestern.util.file.Serialization;
-import edu.southwestern.util.graphics.DrawingPanel;
-import edu.southwestern.util.graphics.GraphicsUtil;
-import edu.southwestern.util.graphics.Plot;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -35,6 +13,26 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import edu.southwestern.MMNEAT.MMNEAT;
+import edu.southwestern.evolution.genotypes.Genotype;
+import edu.southwestern.evolution.genotypes.MLPGenotype;
+import edu.southwestern.evolution.genotypes.TWEANNGenotype;
+import edu.southwestern.evolution.mulambda.MuLambda;
+import edu.southwestern.evolution.selectiveBreeding.SelectiveBreedingEA;
+import edu.southwestern.networks.MLP;
+import edu.southwestern.networks.Network;
+import edu.southwestern.networks.NetworkTask;
+import edu.southwestern.networks.TWEANN;
+import edu.southwestern.parameters.CommonConstants;
+import edu.southwestern.parameters.Parameters;
+import edu.southwestern.scores.Score;
+import edu.southwestern.tasks.LonerTask;
+import edu.southwestern.util.PopulationUtil;
+import edu.southwestern.util.file.Serialization;
+import edu.southwestern.util.graphics.DrawingPanel;
+import edu.southwestern.util.graphics.GraphicsUtil;
+import edu.southwestern.util.graphics.Plot;
 
 /**
  * This complicated, clunky file is used to browse the lineage of an evolved
@@ -257,14 +255,14 @@ public class Offspring {
 								}
 								// Designates this as the active drawing panel
 								o.drawTWEANN(panel, showInnovationNumbers); 
-								if(MMNEAT.task instanceof PicbreederTask) {
-									System.out.println("Draw CPPN image");
-									int imageSize = 300;
-									BufferedImage bi = GraphicsUtil.imageFromCPPN((Network) g.getPhenotype(), imageSize, imageSize);
-									DrawingPanel cppnImage = GraphicsUtil.drawImage(bi, "CPPN Image", imageSize, imageSize);
-									cppnImage.setLocation(Plot.BROWSE_DIM * 3, Plot.BROWSE_DIM);
-									System.out.println("Done drawing image");
-								} else {
+//								if(MMNEAT.task instanceof PicbreederTask) {
+//									System.out.println("Draw CPPN image");
+//									int imageSize = 300;
+//									BufferedImage bi = GraphicsUtil.imageFromCPPN((Network) g.getPhenotype(), imageSize, imageSize);
+//									DrawingPanel cppnImage = GraphicsUtil.drawImage(bi, "CPPN Image", imageSize, imageSize);
+//									cppnImage.setLocation(Plot.BROWSE_DIM * 3, Plot.BROWSE_DIM);
+//									System.out.println("Done drawing image");
+//								} else {
 									// Evaluate mechanism is mostly limited to Loner Tasks
 									@SuppressWarnings("unchecked")
 									Score<TWEANN> s = ((LonerTask<TWEANN>) MMNEAT.task).evaluate((TWEANNGenotype) g);
@@ -272,7 +270,7 @@ public class Offspring {
 									o.modeUsage = moduleUsage;
 									System.out.println("Score: " + s);
 									System.out.println("Module Usage: " + Arrays.toString(moduleUsage));
-								}
+//								}
 							} else if (MMNEAT.genotype instanceof MLPGenotype) {
 								// Evaluate mechanism is limited to Loner Tasks
 								@SuppressWarnings("unchecked")
