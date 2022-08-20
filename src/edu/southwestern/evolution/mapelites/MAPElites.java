@@ -1,6 +1,5 @@
 package edu.southwestern.evolution.mapelites;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -13,8 +12,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
-import autoencoder.python.AutoEncoderProcess;
-import autoencoder.python.TrainAutoEncoderProcess;
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.EvolutionaryHistory;
 import edu.southwestern.evolution.SteadyStateEA;
@@ -24,22 +21,13 @@ import edu.southwestern.evolution.genotypes.CPPNOrDirectToGANGenotype;
 import edu.southwestern.evolution.genotypes.Genotype;
 import edu.southwestern.evolution.genotypes.RealValuedGenotype;
 import edu.southwestern.log.MMNEATLog;
-import edu.southwestern.networks.Network;
 import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.LonerTask;
-import edu.southwestern.tasks.evocraft.MinecraftClient;
-import edu.southwestern.tasks.evocraft.MinecraftClient.MinecraftCoordinates;
-import edu.southwestern.tasks.evocraft.MinecraftLonerShapeTask;
-import edu.southwestern.tasks.evocraft.characterizations.MinecraftMAPElitesBinLabels;
-import edu.southwestern.tasks.innovationengines.PictureTargetTask;
-import edu.southwestern.tasks.interactive.picbreeder.PicbreederTask;
-import edu.southwestern.tasks.loderunner.LodeRunnerLevelTask;
 import edu.southwestern.util.PopulationUtil;
 import edu.southwestern.util.PythonUtil;
 import edu.southwestern.util.datastructures.ArrayUtil;
-import edu.southwestern.util.datastructures.Pair;
 import edu.southwestern.util.file.FileUtilities;
 import edu.southwestern.util.file.Serialization;
 import edu.southwestern.util.random.RandomNumbers;
@@ -66,7 +54,6 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 	private MMNEATLog emitterMeanLog = null;
 	private MMNEATLog cppnThenDirectLog = null;
 	private MMNEATLog cppnVsDirectFitnessLog = null;
-	private MMNEATLog autoencoderLossRange = null;
 	protected MMNEATLog[] emitterIndividualsLogs = null;
 	protected LonerTask<T> task;
 	protected Archive<T> archive;
@@ -77,7 +64,7 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 	private int iterationsWithoutElite;
 	private int individualsPerGeneration;
 	private boolean archiveFileCreated = false;
-	private boolean saveImageArchives;
+	//private boolean saveImageArchives;
 
 	public BinLabels getBinLabelsClass() {
 		return archive.getBinMapping();
@@ -302,13 +289,13 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 	 * according to where they best fit.
 	 * @param example Starting genotype used to derive new instances
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public void initialize(Genotype<T> example) {	
 		if (this instanceof CMAME && MMNEAT.genotype instanceof RealValuedGenotype) {
 			emitterMeanLog = new MMNEATLog("EmitterMeans", false, false, false, true);
 		}
-		saveImageArchives = MMNEAT.task instanceof PictureTargetTask;
+		//saveImageArchives = false; //MMNEAT.task instanceof PictureTargetTask;
 		ArrayList<Genotype<T>> startingPopulation; // Will be new or from saved archive
 		if(iterations > 0) {
 			startingPopulation = new ArrayList<>();
@@ -353,64 +340,61 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 		});
 		CommonConstants.netio = backupNetIO;		
 		
-		if(Parameters.parameters.booleanParameter("dynamicAutoencoderIntervals")) {					
-			autoencoderLossRange = new MMNEATLog("autoencoderLossRange", false, false, false, true);
-		}
-
 		// Special code if image auto-encoder is used
-		if(Parameters.parameters.booleanParameter("trainInitialAutoEncoder") && saveImageArchives && Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
-			System.out.println("Train initial auto-encoder");
-			((PictureTargetTask) MMNEAT.task).saveAllArchiveImages("starting", AutoEncoderProcess.SIDE_LENGTH, AutoEncoderProcess.SIDE_LENGTH, evaluatedPopulation);
-			String experimentDir = FileUtilities.getSaveDirectory()+File.separator+"snapshots";
-			Parameters.parameters.setString("mostRecentAutoEncoder", experimentDir+File.separator+ "starting.pth");
-			String outputAutoEncoderFile = Parameters.parameters.stringParameter("mostRecentAutoEncoder");
-			String trainingDataDirectory = experimentDir+File.separator+"starting";
-
-			// This adds the population to the archive after training the auto-encoder
-			trainImageAutoEncoderAndSetLossBounds(outputAutoEncoderFile, trainingDataDirectory, evaluatedPopulation);
-			System.out.println("Initial occupancy: "+ this.archive.getNumberOfOccupiedBins());
-		} else {
-			MinecraftCoordinates ranges = new MinecraftCoordinates(Parameters.parameters.integerParameter("minecraftXRange"),Parameters.parameters.integerParameter("minecraftYRange"),Parameters.parameters.integerParameter("minecraftZRange"));
-			boolean minecraftInit = archive.getBinMapping() instanceof MinecraftMAPElitesBinLabels && Parameters.parameters.booleanParameter("minecraftContainsWholeMAPElitesArchive");
-			if(minecraftInit) { //then clear world
-				// Initializes the population size and ranges for clearing
-				int pop_size = Parameters.parameters.integerParameter("mu");
-				MinecraftClient.getMinecraftClient().clearSpaceForShapes(new MinecraftCoordinates(0,MinecraftClient.GROUND_LEVEL+1,0), ranges, pop_size, Math.max(Parameters.parameters.integerParameter("minecraftMaxSnakeLength"), MinecraftClient.BUFFER));
-				// Place fences around all areas where a shape from the archive could be placed
-				System.out.println("Area cleared, placing fences...");
-				MinecraftMAPElitesBinLabels minecraftBinLabels = (MinecraftMAPElitesBinLabels) MMNEAT.getArchiveBinLabelsClass();
-				int dim1D = 0;
-				for(int[] multiIndices : minecraftBinLabels) {
-					//System.out.println(Arrays.toString(multiIndices));
-					Pair<MinecraftCoordinates, MinecraftCoordinates> corners = MinecraftLonerShapeTask.configureStartPosition(ranges, multiIndices, dim1D++);
-					// Only place on ground
-					if(corners.t1.y() == MinecraftClient.GROUND_LEVEL+1) {
-						//System.out.println("YES GROUND");
-						MinecraftLonerShapeTask.placeFencesAroundArchive(ranges,corners.t2);
-					}
-				}
-
-				System.out.println("Fences placed");	
-				MinecraftLonerShapeTask.spawnShapesInWorldTrue();
-			}
+//		if(Parameters.parameters.booleanParameter("trainInitialAutoEncoder") && saveImageArchives && Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
+//			System.out.println("Train initial auto-encoder");
+//			((PictureTargetTask) MMNEAT.task).saveAllArchiveImages("starting", AutoEncoderProcess.SIDE_LENGTH, AutoEncoderProcess.SIDE_LENGTH, evaluatedPopulation);
+//			String experimentDir = FileUtilities.getSaveDirectory()+File.separator+"snapshots";
+//			Parameters.parameters.setString("mostRecentAutoEncoder", experimentDir+File.separator+ "starting.pth");
+//			String outputAutoEncoderFile = Parameters.parameters.stringParameter("mostRecentAutoEncoder");
+//			String trainingDataDirectory = experimentDir+File.separator+"starting";
+//
+//			// This adds the population to the archive after training the auto-encoder
+//			trainImageAutoEncoderAndSetLossBounds(outputAutoEncoderFile, trainingDataDirectory, evaluatedPopulation);
+//			System.out.println("Initial occupancy: "+ this.archive.getNumberOfOccupiedBins());
+//		} else {
+//			MinecraftCoordinates ranges = new MinecraftCoordinates(Parameters.parameters.integerParameter("minecraftXRange"),Parameters.parameters.integerParameter("minecraftYRange"),Parameters.parameters.integerParameter("minecraftZRange"));
+//			boolean minecraftInit = archive.getBinMapping() instanceof MinecraftMAPElitesBinLabels && Parameters.parameters.booleanParameter("minecraftContainsWholeMAPElitesArchive");
+//			if(minecraftInit) { //then clear world
+//				// Initializes the population size and ranges for clearing
+//				int pop_size = Parameters.parameters.integerParameter("mu");
+//				MinecraftClient.getMinecraftClient().clearSpaceForShapes(new MinecraftCoordinates(0,MinecraftClient.GROUND_LEVEL+1,0), ranges, pop_size, Math.max(Parameters.parameters.integerParameter("minecraftMaxSnakeLength"), MinecraftClient.BUFFER));
+//				// Place fences around all areas where a shape from the archive could be placed
+//				System.out.println("Area cleared, placing fences...");
+//				MinecraftMAPElitesBinLabels minecraftBinLabels = (MinecraftMAPElitesBinLabels) MMNEAT.getArchiveBinLabelsClass();
+//				int dim1D = 0;
+//				for(int[] multiIndices : minecraftBinLabels) {
+//					//System.out.println(Arrays.toString(multiIndices));
+//					Pair<MinecraftCoordinates, MinecraftCoordinates> corners = MinecraftLonerShapeTask.configureStartPosition(ranges, multiIndices, dim1D++);
+//					// Only place on ground
+//					if(corners.t1.y() == MinecraftClient.GROUND_LEVEL+1) {
+//						//System.out.println("YES GROUND");
+//						MinecraftLonerShapeTask.placeFencesAroundArchive(ranges,corners.t2);
+//					}
+//				}
+//
+//				System.out.println("Fences placed");	
+//				MinecraftLonerShapeTask.spawnShapesInWorldTrue();
+//			}
 
 			// Add initial population to archive, if add is true
 			evaluatedPopulation.parallelStream().forEach( (s) -> {
+				@SuppressWarnings("unused")
 				boolean result = archive.add(s); // Fill the archive with random starting individuals, only when this flag is true
 
 				// Minecraft shapes have to be re-generated and added to the world
-				synchronized(archive) {
-					if(minecraftInit && result) {
-						//System.out.println("Put "+s.individual.getId()+":"+s.MAPElitesBehaviorMap());
-						int index1D = (int) s.MAPElitesBehaviorMap().get("dim1D");
-						double scoreOfCurrentElite = s.behaviorIndexScore();
-						MinecraftLonerShapeTask.clearAndSpawnShape(s.individual, s.MAPElitesBehaviorMap(), ranges, index1D, scoreOfCurrentElite);
-					}
-				}
+//				synchronized(archive) {
+//					if(minecraftInit && result) {
+//						//System.out.println("Put "+s.individual.getId()+":"+s.MAPElitesBehaviorMap());
+//						int index1D = (int) s.MAPElitesBehaviorMap().get("dim1D");
+//						double scoreOfCurrentElite = s.behaviorIndexScore();
+//						MinecraftLonerShapeTask.clearAndSpawnShape(s.individual, s.MAPElitesBehaviorMap(), ranges, index1D, scoreOfCurrentElite);
+//					}
+//				}
 			});
 			//long endTime = System.currentTimeMillis();
 			//System.out.println("TIME TAKEN:" + (endTime - startTime));
-		}
+//		}
 	}
 
 	/**
@@ -466,18 +450,18 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 				
 			}			
 			// Special code for Lode Runner
-			if(MMNEAT.task instanceof LodeRunnerLevelTask) {
-				int numBeatenLevels = 0;
-				for(Float x : elite) {
-					// If A* fitness is used, then unbeatable levels have a score of -1 and thus won't be counted here.
-					// If A*/Connectivity combo is used, then a connectivity percentage in (0,1) means the level is not beatable.
-					// Score will only be greater than 1 if there is an actual A* path.
-					if(x >= 1.0) {
-						numBeatenLevels++;
-					}
-				}
-				((LodeRunnerLevelTask<?>)MMNEAT.task).beatable.log(pseudoGeneration + "\t" + numBeatenLevels + "\t" + ((1.0*numBeatenLevels)/(1.0*numFilledBins)));
-			}
+//			if(MMNEAT.task instanceof LodeRunnerLevelTask) {
+//				int numBeatenLevels = 0;
+//				for(Float x : elite) {
+//					// If A* fitness is used, then unbeatable levels have a score of -1 and thus won't be counted here.
+//					// If A*/Connectivity combo is used, then a connectivity percentage in (0,1) means the level is not beatable.
+//					// Score will only be greater than 1 if there is an actual A* path.
+//					if(x >= 1.0) {
+//						numBeatenLevels++;
+//					}
+//				}
+//				((LodeRunnerLevelTask<?>)MMNEAT.task).beatable.log(pseudoGeneration + "\t" + numBeatenLevels + "\t" + ((1.0*numBeatenLevels)/(1.0*numFilledBins)));
+//			}
 			
 			if (emitterMeanLog != null) { 
 				boolean backupNetIO = CommonConstants.netio;
@@ -594,41 +578,41 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 	 * @param newEliteProduced Whether the latest individual was good enough to
 	 * 							fill/replace a bin.
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ })
 	public synchronized void fileUpdates(boolean newEliteProduced) {
-		if(saveImageArchives && iterations % Parameters.parameters.integerParameter("imageArchiveSaveFrequency") == 0) {
-			System.out.println("Save whole archive at iteration "+iterations);
-			((PictureTargetTask) MMNEAT.task).saveAllArchiveImages("iteration"+iterations, AutoEncoderProcess.SIDE_LENGTH, AutoEncoderProcess.SIDE_LENGTH, archive.getArchive());
-			
-			if(Parameters.parameters.booleanParameter("deleteOldArchives") && iterations != 0) {
-				String snapshot = FileUtilities.getSaveDirectory() + File.separator + "snapshots";
-				String toDelete = snapshot + File.separator + Parameters.parameters.stringParameter("latestIterationSaved");
-				File dir = new File(toDelete);
-				boolean result = FileUtilities.deleteDirectory(dir);
-				System.out.println("Deleted "+toDelete+": " + result);
-				
-				if(Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
-					toDelete = toDelete + ".pth";
-					File pth = new File(toDelete);
-					pth.delete();
-					System.out.println("Deleted "+toDelete);
-				}
-			}
-			Parameters.parameters.setString("latestIterationSaved", "iteration" + iterations);
-			// If we are using the autoencoder (only use if "trainingAutoEncoder" == true), re-train it here
-			if(Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
-				String experimentDir = FileUtilities.getSaveDirectory()+File.separator+"snapshots";
-				Parameters.parameters.setString("mostRecentAutoEncoder", experimentDir+File.separator+ "iteration" + iterations + ".pth");
-				String outputAutoEncoderFile = Parameters.parameters.stringParameter("mostRecentAutoEncoder");
-				String trainingDataDirectory = experimentDir+File.separator+"iteration" + iterations;
-				
-				int oldOccupied = this.archive.getNumberOfOccupiedBins();
-				trainImageAutoEncoderAndSetLossBounds(outputAutoEncoderFile, trainingDataDirectory, archive.getArchive());
-				int newOccupied = this.archive.getNumberOfOccupiedBins();
-				System.out.println("Archive reorganized based on new AutoEncoder: Occupancy "+oldOccupied+" to "+newOccupied);
-			} 
-			
-		}
+//		if(saveImageArchives && iterations % Parameters.parameters.integerParameter("imageArchiveSaveFrequency") == 0) {
+//			System.out.println("Save whole archive at iteration "+iterations);
+//			((PictureTargetTask) MMNEAT.task).saveAllArchiveImages("iteration"+iterations, AutoEncoderProcess.SIDE_LENGTH, AutoEncoderProcess.SIDE_LENGTH, archive.getArchive());
+//			
+//			if(Parameters.parameters.booleanParameter("deleteOldArchives") && iterations != 0) {
+//				String snapshot = FileUtilities.getSaveDirectory() + File.separator + "snapshots";
+//				String toDelete = snapshot + File.separator + Parameters.parameters.stringParameter("latestIterationSaved");
+//				File dir = new File(toDelete);
+//				boolean result = FileUtilities.deleteDirectory(dir);
+//				System.out.println("Deleted "+toDelete+": " + result);
+//				
+//				if(Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
+//					toDelete = toDelete + ".pth";
+//					File pth = new File(toDelete);
+//					pth.delete();
+//					System.out.println("Deleted "+toDelete);
+//				}
+//			}
+//			Parameters.parameters.setString("latestIterationSaved", "iteration" + iterations);
+//			// If we are using the autoencoder (only use if "trainingAutoEncoder" == true), re-train it here
+//			if(Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
+//				String experimentDir = FileUtilities.getSaveDirectory()+File.separator+"snapshots";
+//				Parameters.parameters.setString("mostRecentAutoEncoder", experimentDir+File.separator+ "iteration" + iterations + ".pth");
+//				String outputAutoEncoderFile = Parameters.parameters.stringParameter("mostRecentAutoEncoder");
+//				String trainingDataDirectory = experimentDir+File.separator+"iteration" + iterations;
+//				
+//				int oldOccupied = this.archive.getNumberOfOccupiedBins();
+//				trainImageAutoEncoderAndSetLossBounds(outputAutoEncoderFile, trainingDataDirectory, archive.getArchive());
+//				int newOccupied = this.archive.getNumberOfOccupiedBins();
+//				System.out.println("Archive reorganized based on new AutoEncoder: Occupancy "+oldOccupied+" to "+newOccupied);
+//			} 
+//			
+//		}
 		// Log to file
 		log();
 		Parameters.parameters.setInteger("lastSavedGeneration", iterations);
@@ -643,50 +627,6 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 		}
 		System.out.println(iterations + "\t" + iterationsWithoutElite + "\t");
 		
-	}
-
-	/**
-	 * Trains autoencoder using specified directory for source input and specified output file (pth extension).
-	 * Also, a collection of preexisting images is (optionally) used to determine bounds on the possible loss values.
-	 * 
-	 * @param outputAutoEncoderFile Full path for pth file to save
-	 * @param trainingDataDirectory Directory full of 28 by 28 images to train autoencoder on
-	 * @param previousImages Collection of Scores for CPPNs that generate images to calculate loss for after training
-	 */
-	private void trainImageAutoEncoderAndSetLossBounds(String outputAutoEncoderFile, String trainingDataDirectory, Vector<Score<T>> previousImages) {
-		if(AutoEncoderProcess.currentProcess != null) {
-			// Stop autoencoder inference when it is time to train a new one
-			AutoEncoderProcess.terminateAutoEncoderProcess(); 
-		}
-		TrainAutoEncoderProcess training = new TrainAutoEncoderProcess(trainingDataDirectory, outputAutoEncoderFile);
-		training.start();
-		// Initialize process for newly trained autoencoder
-		AutoEncoderProcess.getAutoEncoderProcess(); // (sort of optional to initialize here)
-		AutoEncoderProcess.neverInitialized = false;
-		// Now we need to dump the archive and replace it with a new one after re-evaluating all old contents.
-		if(Parameters.parameters.booleanParameter("dynamicAutoencoderIntervals")) {					
-			double minLoss = 1.0;
-			double maxLoss = 0.0;
-			// TODO: This can be made parallel with a stream, but the local vars for min and max need some special handling
-			for(Score<T> s : previousImages) {
-				if(s != null) { // Ignore empty cells
-					Network cppn = (Network) s.individual.getPhenotype();
-					BufferedImage image = PicbreederTask.imageFromCPPN(cppn, PictureTargetTask.imageWidth, PictureTargetTask.imageHeight, ArrayUtil.doubleOnes(cppn.numInputs()));
-					double loss = AutoEncoderProcess.getReconstructionLoss(image);
-					minLoss = Math.min(loss, minLoss);
-					maxLoss = Math.max(loss, maxLoss);
-				}
-			}
-			Parameters.parameters.setDouble("minAutoencoderLoss", minLoss);
-			Parameters.parameters.setDouble("maxAutoencoderLoss", maxLoss);	
-			if(autoencoderLossRange != null) {
-				final int pseudoGeneration = iterations/individualsPerGeneration;
-				autoencoderLossRange.log(pseudoGeneration + "\t" + minLoss + "\t" + maxLoss);
-			}
-			System.out.println("Loss ranges from "+minLoss+" to "+maxLoss);
-		}		
-		// Will bin differently because autoencoder has changed, as have expected loss bounds. Images get re-evaluated
-		this.archive = new Archive<T>(previousImages, this.archive.getBinMapping(), this.archive.getArchiveDirectory(), CommonConstants.netio); 
 	}
 	
 	/**
