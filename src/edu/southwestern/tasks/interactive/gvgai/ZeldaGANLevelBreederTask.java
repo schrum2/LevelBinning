@@ -1,7 +1,6 @@
 package edu.southwestern.tasks.interactive.gvgai;
 
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
@@ -20,11 +19,8 @@ import javax.swing.JPanel;
 
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.parameters.Parameters;
-import edu.southwestern.tasks.gvgai.GVGAIUtil;
-import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
 import edu.southwestern.tasks.gvgai.zelda.ZeldaGANLevelTask;
 import edu.southwestern.tasks.gvgai.zelda.ZeldaGANUtil;
-import edu.southwestern.tasks.gvgai.zelda.ZeldaVGLCUtil;
 import edu.southwestern.tasks.gvgai.zelda.dungeon.Dungeon;
 import edu.southwestern.tasks.gvgai.zelda.dungeon.DungeonUtil;
 import edu.southwestern.tasks.gvgai.zelda.dungeon.GraphDungeon;
@@ -35,12 +31,6 @@ import edu.southwestern.tasks.interactive.InteractiveGANLevelEvolutionTask;
 import edu.southwestern.tasks.mario.gan.GANProcess;
 import edu.southwestern.util.datastructures.ArrayUtil;
 import edu.southwestern.util.datastructures.Pair;
-import gvgai.core.game.BasicGame;
-import gvgai.core.game.Game;
-import gvgai.core.vgdl.VGDLFactory;
-import gvgai.core.vgdl.VGDLParser;
-import gvgai.core.vgdl.VGDLRegistry;
-import gvgai.tracks.singlePlayer.tools.human.Agent;
 import me.jakerg.rougelike.Tile;
 
 /**
@@ -53,8 +43,8 @@ public class ZeldaGANLevelBreederTask extends InteractiveGANLevelEvolutionTask {
 	private static final int DUNGEONIZE_BUTTON_INDEX = -19;
 	
 	// Change GAME_FILE to zeldacopy "enhanced" version of original GVGAI version to test dungeon
-	private static final String GAME_FILE = "zeldacopy";
-	private static final String FULL_GAME_FILE = LevelBreederTask.GAMES_PATH + GAME_FILE + ".txt";
+	//private static final String GAME_FILE = "zeldacopy";
+	//private static final String FULL_GAME_FILE = LevelBreederTask.GAMES_PATH + GAME_FILE + ".txt";
 
 	private ZeldaDungeon<ArrayList<Double>> sd;
 	
@@ -154,8 +144,7 @@ public class ZeldaGANLevelBreederTask extends InteractiveGANLevelEvolutionTask {
 		rulesAndBackbones.add(rulePanel);
 		rulesAndBackbones.add(backbonePanel);
 //		top.add(rulesAndBackbones);
-		VGDLFactory.GetInstance().init(); // Get an instant of VGDL Factor and initialize the characters cache
-		VGDLRegistry.GetInstance().init(); // Get an instance of VGDL Registry and initialize the sprite factory
+
 	}
 
 	/**
@@ -168,48 +157,6 @@ public class ZeldaGANLevelBreederTask extends InteractiveGANLevelEvolutionTask {
 	}
 
 	/**
-	 * Take the latent vector and use the ZeldaGAN to create a level,
-	 * and then a GameBundle used for playing the game.
-	 * @param phenotype Latent vector
-	 * @return GameBundle for playing GVG-AI game
-	 */
-	public static GameBundle setUpGameWithLevelFromLatentVector(ArrayList<Double> phenotype) {
-		double[] latentVector = ArrayUtil.doubleArrayFromList(phenotype);
-		String[] level = ZeldaGANUtil.generateGVGAILevelFromGAN(latentVector, new Point(8,8));
-		int seed = 0; // TODO: Use parameter?
-		Agent agent = new Agent();
-		agent.setup(null, seed, true); // null = no log, true = human 
-		Game game = new VGDLParser().parseGame(FULL_GAME_FILE); // Initialize the game	
-
-		return new GameBundle(game, level, agent, seed, 0);
-	}
-	
-	/**
-	 * Like setUpGameWithLevelFromLatentVector but accepts a 2D list of integers to generate a game bundle
-	 * @param arrayList - 2D list of integers
-	 * @return GameBundle for player GVG-AI game
-	 */
-	public static GameBundle setUpGameWithLevelFromList(List<List<Integer>> arrayList) {
-		String[] stringLevel = ZeldaVGLCUtil.convertZeldaRoomListtoGVGAI(arrayList, new Point(8, 8));
-		int seed = 0; // TODO: Use parameter?
-		Agent agent = new Agent();
-		agent.setup(null, seed, true); // null = no log, true = human 
-		Game game = new VGDLParser().parseGame(FULL_GAME_FILE); // Initialize the game	
-
-		return new GameBundle(game, stringLevel, agent, seed, 0);
-	}
-	
-	public static GameBundle setUpGameWithDungeon(Dungeon dungeon) {
-		String[] stringLevel = dungeon.getCurrentlevel().level.getStringLevel(new Point(5, 8));
-		int seed = 0; // TODO: Use parameter?
-		Agent agent = new Agent();
-		agent.setup(null, seed, true); // null = no log, true = human 
-		Game game = new VGDLParser().parseGame(FULL_GAME_FILE); // Initialize the game	
-
-		return new GameBundle(game, stringLevel, agent, seed, 0);
-	}
-
-	/**
 	 * Creates a BufferedImage that represents the level on the button
 	 * @param phenotype Latent vector
 	 * @param width Width of image in pixels
@@ -219,7 +166,7 @@ public class ZeldaGANLevelBreederTask extends InteractiveGANLevelEvolutionTask {
 	 */
 	@Override
 	protected BufferedImage getButtonImage(ArrayList<Double> phenotype, int width, int height, double[] inputMultipliers) {
-		if(!Parameters.parameters.booleanParameter("gvgAIForZeldaGAN")) {
+//		if(!Parameters.parameters.booleanParameter("gvgAIForZeldaGAN")) {
 			Dungeon dummy = new Dungeon();
 			List<List<Integer>> ints = ZeldaGANUtil.generateOneRoomListRepresentationFromGAN(ArrayUtil.doubleArrayFromList(phenotype));
 			//Prevents doors from being displayed before Dungeonize is clicked
@@ -249,11 +196,11 @@ public class ZeldaGANLevelBreederTask extends InteractiveGANLevelEvolutionTask {
 			}
 			dummy.setCurrentLevel("ASDF");
 			return DungeonUtil.getLevelImage(n, dummy);
-		} else {
-			GameBundle bundle = setUpGameWithLevelFromLatentVector(phenotype); // Use the above function to build our ZeldaGAN
-			BufferedImage levelImage = GVGAIUtil.getLevelImage(((BasicGame) bundle.game), bundle.level, (Agent) bundle.agent, width, height, bundle.randomSeed); // Make image of zelda level
-			return levelImage;
-		}
+//		} else {
+//			GameBundle bundle = setUpGameWithLevelFromLatentVector(phenotype); // Use the above function to build our ZeldaGAN
+//			BufferedImage levelImage = GVGAIUtil.getLevelImage(((BasicGame) bundle.game), bundle.level, (Agent) bundle.agent, width, height, bundle.randomSeed); // Make image of zelda level
+//			return levelImage;
+//		}
 		
 	}
 
@@ -317,14 +264,14 @@ public class ZeldaGANLevelBreederTask extends InteractiveGANLevelEvolutionTask {
 	 */
 	@Override
 	public void playLevel(ArrayList<Double> phenotype) {
-		GameBundle bundle = setUpGameWithLevelFromLatentVector(phenotype);
-		// Must launch game in own thread, or won't animate or listen for events
-		new Thread() {
-			public void run() {
-				// True is to watch the game being played
-				GVGAIUtil.runOneGame(bundle, true);
-			}
-		}.start();
+//		GameBundle bundle = setUpGameWithLevelFromLatentVector(phenotype);
+//		// Must launch game in own thread, or won't animate or listen for events
+//		new Thread() {
+//			public void run() {
+//				// True is to watch the game being played
+//				GVGAIUtil.runOneGame(bundle, true);
+//			}
+//		}.start();
 	}
 	
 	@Override
