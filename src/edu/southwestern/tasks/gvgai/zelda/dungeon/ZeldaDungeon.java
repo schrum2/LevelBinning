@@ -28,19 +28,19 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import edu.southwestern.parameters.Parameters;
-import edu.southwestern.tasks.gvgai.GVGAIUtil;
-import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
+//import edu.southwestern.tasks.gvgai.GVGAIUtil;
+//import edu.southwestern.tasks.gvgai.GVGAIUtil.GameBundle;
 import edu.southwestern.tasks.gvgai.zelda.ZeldaVGLCUtil;
 import edu.southwestern.tasks.gvgai.zelda.dungeon.Dungeon.Node;
 import edu.southwestern.tasks.gvgai.zelda.level.ZeldaLevelUtil;
 import edu.southwestern.tasks.gvgai.zelda.level.ZeldaState;
 import edu.southwestern.tasks.gvgai.zelda.level.ZeldaState.GridAction;
-import edu.southwestern.tasks.interactive.gvgai.ZeldaGANLevelBreederTask;
+//import edu.southwestern.tasks.interactive.gvgai.ZeldaGANLevelBreederTask;
 import edu.southwestern.util.random.RandomNumbers;
 import edu.southwestern.util.search.AStarSearch;
 import edu.southwestern.util.search.Search;
-import gvgai.core.game.BasicGame;
-import gvgai.tracks.singlePlayer.tools.human.Agent;
+//import gvgai.core.game.BasicGame;
+//import gvgai.tracks.singlePlayer.tools.human.Agent;
 import me.jakerg.rougelike.RougelikeApp;
 import me.jakerg.rougelike.Tile;
 import me.jakerg.rougelike.TileUtil;
@@ -282,23 +282,23 @@ public abstract class ZeldaDungeon<T> {
 					for(GridAction a : result)
 						System.out.println(a.getD().toString());
 				//				
-				if(!Parameters.parameters.booleanParameter("gvgAIForZeldaGAN")) {
+//				if(!Parameters.parameters.booleanParameter("gvgAIForZeldaGAN")) {
 					new Thread() {
 						@Override
 						public void run() {
 							RougelikeApp.startDungeon(dungeonInstance);
 						}
 					}.start();
-				} else {
-					GameBundle bundle = ZeldaGANLevelBreederTask.setUpGameWithDungeon(dungeonInstance);
-					new Thread() {
-						@Override
-						public void run() {
-							// True is to watch the game being played
-							GVGAIUtil.runDungeon(bundle, true, dungeonInstance);
-						}
-					}.start();
-				}
+//				} else {
+//					GameBundle bundle = ZeldaGANLevelBreederTask.setUpGameWithDungeon(dungeonInstance);
+//					new Thread() {
+//						@Override
+//						public void run() {
+//							// True is to watch the game being played
+//							GVGAIUtil.runDungeon(bundle, true, dungeonInstance);
+//						}
+//					}.start();
+//				}
 				Parameters.parameters.setBoolean("netio", false);
 			}
 
@@ -557,14 +557,14 @@ public abstract class ZeldaDungeon<T> {
 	 * @return BufferedImage for Image label
 	 */
 	private BufferedImage getButtonImage(Node n, int width, int height) {
-		if(Parameters.parameters.booleanParameter("gvgAIForZeldaGAN")) {
-			Level level = n.level;
-			List<List<Integer>> list = level.getLevel();
-			GameBundle bundle = ZeldaGANLevelBreederTask.setUpGameWithLevelFromList(list);
-			return GVGAIUtil.getLevelImage(((BasicGame) bundle.game), bundle.level, (Agent) bundle.agent, width, height, bundle.randomSeed);
-		} else {
+//		if(Parameters.parameters.booleanParameter("gvgAIForZeldaGAN")) {
+//			Level level = n.level;
+//			List<List<Integer>> list = level.getLevel();
+//			GameBundle bundle = ZeldaGANLevelBreederTask.setUpGameWithLevelFromList(list);
+//			return GVGAIUtil.getLevelImage(((BasicGame) bundle.game), bundle.level, (Agent) bundle.agent, width, height, bundle.randomSeed);
+//		} else {
 			return DungeonUtil.getLevelImage(n, dungeonInstance);
-		}
+//		}
 
 	}
 
