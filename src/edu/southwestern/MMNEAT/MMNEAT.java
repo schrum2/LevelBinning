@@ -2,7 +2,6 @@ package edu.southwestern.MMNEAT;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -13,15 +12,11 @@ import edu.southwestern.evolution.EA;
 import edu.southwestern.evolution.EvolutionaryHistory;
 import edu.southwestern.evolution.ScoreHistory;
 import edu.southwestern.evolution.crossover.Crossover;
-import edu.southwestern.evolution.genotypes.CPPNOrBlockVectorGenotype;
 import edu.southwestern.evolution.genotypes.CPPNOrDirectToGANGenotype;
 import edu.southwestern.evolution.genotypes.CombinedGenotype;
 import edu.southwestern.evolution.genotypes.Genotype;
-import edu.southwestern.evolution.genotypes.HyperNEATCPPNGenotype;
-import edu.southwestern.evolution.genotypes.HyperNEATCPPNforDL4JGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNPlusParametersGenotype;
-import edu.southwestern.evolution.halloffame.HallOfFame;
 import edu.southwestern.evolution.lineage.Offspring;
 import edu.southwestern.evolution.mapelites.Archive;
 import edu.southwestern.evolution.mapelites.BinLabels;
@@ -31,36 +26,21 @@ import edu.southwestern.evolution.metaheuristics.FavorXModulesFitness;
 import edu.southwestern.evolution.metaheuristics.LinkPenalty;
 import edu.southwestern.evolution.metaheuristics.MaxModulesFitness;
 import edu.southwestern.evolution.metaheuristics.Metaheuristic;
-import edu.southwestern.evolution.metaheuristics.SubstrateLinkPenalty;
 import edu.southwestern.evolution.mulambda.MuLambda;
 import edu.southwestern.experiment.Experiment;
-import edu.southwestern.experiment.post.MinecraftBlockRenderExperiment;
 import edu.southwestern.log.EvalLog;
 import edu.southwestern.log.MMNEATLog;
-import edu.southwestern.log.PerformanceLog;
 import edu.southwestern.networks.ActivationFunctions;
-import edu.southwestern.networks.hyperneat.Bottom1DSubstrateMapping;
-import edu.southwestern.networks.hyperneat.HyperNEATTask;
-import edu.southwestern.networks.hyperneat.HyperNEATUtil;
-import edu.southwestern.networks.hyperneat.SubstrateCoordinateMapping;
-import edu.southwestern.networks.hyperneat.architecture.SubstrateArchitectureDefinition;
 import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.LonerTask;
 import edu.southwestern.tasks.MultiplePopulationTask;
 import edu.southwestern.tasks.Task;
-import edu.southwestern.tasks.evocraft.blocks.BlockSet;
-import edu.southwestern.tasks.evocraft.shapegeneration.ShapeGenerator;
-import edu.southwestern.tasks.functionoptimization.FunctionOptimizationTask;
 import edu.southwestern.tasks.gvgai.zelda.dungeon.BinOriginalZeldaDungeons;
 import edu.southwestern.tasks.gvgai.zelda.study.HumanSubjectStudy2019Zelda;
 import edu.southwestern.tasks.mario.gan.GANProcess;
 import edu.southwestern.tasks.mario.level.BinOriginalMarioLevels;
-import edu.southwestern.tasks.motests.MultipleFunctionOptimization;
-import edu.southwestern.tasks.mspacman.facades.ExecutorFacade;
-import edu.southwestern.tasks.rlglue.tetris.HyperNEATTetrisTask;
-import edu.southwestern.tasks.ut2004.testing.HumanSubjectStudy2018TeammateServer;
 import edu.southwestern.util.ClassCreation;
 import edu.southwestern.util.PopulationUtil;
 import edu.southwestern.util.file.FileUtilities;
@@ -68,7 +48,6 @@ import edu.southwestern.util.file.Serialization;
 import edu.southwestern.util.random.RandomGenerator;
 import edu.southwestern.util.random.RandomNumbers;
 import edu.southwestern.util.stats.Statistic;
-import oldpacman.Executor;
 
 /**
  * Modular Multiobjective Neuro-Evolution of Augmenting Topologies.
@@ -101,23 +80,14 @@ public class MMNEAT {
 	public static ArrayList<Metaheuristic> metaheuristics;
 	public static ArrayList<ArrayList<String>> fitnessFunctions;
 	public static ArrayList<Statistic> aggregationOverrides;
-	@SuppressWarnings("rawtypes") // applies to any population type
-	public static PerformanceLog performanceLog;
 	private static ArrayList<Integer> actualFitnessFunctions;
 	public static EvalLog evalReport = null;
 	public static RandomGenerator weightPerturber = null;
 	public static MMNEATLog ghostLocationsOnPowerPillEaten = null;
 	public static boolean browseLineage = false;
-	public static SubstrateCoordinateMapping substrateMapping = null;
-	@SuppressWarnings("rawtypes")
-	public static HallOfFame hallOfFame;
-	public static SubstrateArchitectureDefinition substrateArchitectureDefinition;
 	@SuppressWarnings("rawtypes")
 	public static Archive pseudoArchive;
 	public static boolean usingDiversityBinningScheme = false;
-	public static BlockSet blockSet; // Possible blocks in Minecraft
-	@SuppressWarnings("rawtypes")
-	public static ShapeGenerator shapeGenerator; // Way shapes are generated in Minecraft
 	
 	public static MMNEAT mmneat;
 
@@ -200,19 +170,14 @@ public class MMNEAT {
 			System.out.println("Maximize Modes");
 			metaheuristics.add(new MaxModulesFitness());
 		}
-		if (Parameters.parameters.booleanParameter("penalizeSubstrateLinks")) {
-			System.out.println("Penalize Substrate Links");
-			metaheuristics.add(new SubstrateLinkPenalty());
-		}
 	}
 
 	private static void setupTWEANNGenotypeDataTracking(boolean coevolution) {
 		if (genotype instanceof TWEANNGenotype || 
 				genotype instanceof TWEANNPlusParametersGenotype ||
 				genotype instanceof CombinedGenotype || // Assume first member of pair is TWEANNGenotype
-				genotype instanceof CPPNOrDirectToGANGenotype || // Assume first form is TWEANNGenotype
-				genotype instanceof CPPNOrBlockVectorGenotype || // Assume first form is TWEANNGenotype
-				genotype instanceof HyperNEATCPPNforDL4JGenotype) { // Contains CPPN that is TWEANNGenotype
+				genotype instanceof CPPNOrDirectToGANGenotype // Assume first form is TWEANNGenotype
+				) { 
 			if (Parameters.parameters.booleanParameter("io")
 					&& Parameters.parameters.booleanParameter("logTWEANNData")) {
 				System.out.println("Init TWEANN Log");
@@ -227,13 +192,11 @@ public class MMNEAT {
 					((TWEANNPlusParametersGenotype) genotype).getTWEANNGenotype().biggestInnovation() :
 						genotype instanceof CPPNOrDirectToGANGenotype ?
 								((TWEANNGenotype) ((CPPNOrDirectToGANGenotype) genotype).getCurrentGenotype()).biggestInnovation():
-									(genotype instanceof CPPNOrBlockVectorGenotype ? 
-											((TWEANNGenotype) ((CPPNOrBlockVectorGenotype) genotype).getCurrentGenotype()).biggestInnovation():
+						
 												(genotype instanceof CombinedGenotype ? 
 														((TWEANNGenotype) ((CombinedGenotype) genotype).t1).biggestInnovation() :
-															(genotype instanceof HyperNEATCPPNforDL4JGenotype ?
-																	((HyperNEATCPPNforDL4JGenotype) genotype).getCPPN().biggestInnovation()	:
-																		((TWEANNGenotype) genotype).biggestInnovation())));
+										
+																		((TWEANNGenotype) genotype).biggestInnovation());
 					
 			if (biggestInnovation > EvolutionaryHistory.largestUnusedInnovationNumber) {
 					EvolutionaryHistory.setInnovation(biggestInnovation + 1);
@@ -384,23 +347,6 @@ public class MMNEAT {
 				Parameters.parameters.setDouble("preEatenPillPercentage", 0.999);
 			}
 
-			HyperNEATTask HNTSeedTask = (HyperNEATTask) ClassCreation.createObject("hyperNEATSeedTask");
-			if(CommonConstants.hyperNEAT || HNTSeedTask != null) {
-				if(Parameters.parameters.booleanParameter("useHyperNEATCustomArchitecture")) {
-					substrateArchitectureDefinition = (SubstrateArchitectureDefinition) ClassCreation.createObject("hyperNEATCustomArchitecture");
-				}
-				// For each substrate layer pairing, there can be multiple output neurons in the CPPN
-				HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair = CommonConstants.leo ? 2 : 1;
-				// Number of output neurons needed to designate bias values across all substrates
-				//				HyperNEATCPPNGenotype.numBiasOutputs = CommonConstants.evolveHyperNEATBias ? 
-				//						(HNTSeedTask == null ? 
-				//							HyperNEATUtil.numBiasOutputsNeeded() :
-				//							HyperNEATUtil.numBiasOutputsNeeded(HNTSeedTask)) : 
-				//						0;				
-			}
-			if(Parameters.parameters.booleanParameter("hallOfFame")){
-				hallOfFame = new HallOfFame();
-			}
 			if (task == null) {
 				// this else statement should only happen for JUnit testing cases.
 				// Some default network setup is needed.
@@ -414,12 +360,6 @@ public class MMNEAT {
 			// Only loads if settings indicate that this should be used
 			ScoreHistory.load();
 
-			// Changes network input setting to HyperNEAT settings
-			if (CommonConstants.hyperNEAT) {
-				System.out.println("Using HyperNEAT");
-				hyperNEATOverrides();
-			}
-
 			setupMetaHeuristics();
 			// An EA is always needed. Currently only GenerationalEA classes are supported
 			if (!loadFrom) {
@@ -429,23 +369,7 @@ public class MMNEAT {
 			// A Genotype to evolve with is always needed
 			System.out.println("Example genotype");
 			String seedGenotype = Parameters.parameters.stringParameter("seedGenotype");
-			if(HNTSeedTask != null && Parameters.parameters.integerParameter("lastSavedGeneration") == 0) { // hyperNEATseed is not null
-				Parameters.parameters.setBoolean("randomizeSeedWeights", true); // Makes sure PopulationUtil randomized all weights
-
-				// Since this approach required many large TWEANNs to be saved in memory, alternative gene representations are used with optional fields removed
-				TWEANNGenotype.smallerGenotypes = true;            
-				substrateMapping = (SubstrateCoordinateMapping) ClassCreation.createObject("substrateMapping");
-				int numSubstratePairings = HNTSeedTask.getSubstrateConnectivity().size();
-				System.out.println("Number of substrate pairs being connected: "+ numSubstratePairings);
-				assert HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair > 0 : "HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair must be positive";
-				HyperNEATCPPNGenotype hntGeno = new HyperNEATCPPNGenotype(HyperNEATUtil.numCPPNInputs(HNTSeedTask),  numSubstratePairings * HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair + HyperNEATUtil.numBiasOutputsNeeded(HNTSeedTask), 0);
-				TWEANNGenotype seedGeno = hntGeno.getSubstrateGenotypeForEvolution(HNTSeedTask);
-				genotype = seedGeno;
-				System.out.println("Genotype seeded from HyperNEAT task substrate specification");
-				seedExample = true;
-				// Cleanup data we don't need any more
-				HNTSeedTask = null;
-			} else if (seedGenotype.isEmpty()) {
+			if (seedGenotype.isEmpty()) {
 				genotype = (Genotype) ClassCreation.createObject("genotype");
 			} else {
 				// Copy assures a fresh genotype id
@@ -475,9 +399,6 @@ public class MMNEAT {
 			experiment = (Experiment) ClassCreation.createObject("experiment");
 			experiment.init();
 			if (!loadFrom && Parameters.parameters.booleanParameter("io")) {
-				if (Parameters.parameters.booleanParameter("logPerformance") && !multiPopulationCoevolution) {
-					performanceLog = new PerformanceLog("Performance");
-				}
 				if (Parameters.parameters.booleanParameter("logMutationAndLineage")) {
 					EvolutionaryHistory.initLineageAndMutationLogs();
 				}
@@ -486,31 +407,6 @@ public class MMNEAT {
 			System.out.println("Exception: " + ex);
 			ex.printStackTrace();
 		}
-	}
-
-	/**
-	 * Using HyperNEAT means certain parameters values need to be overridden
-	 * @throws NoSuchMethodException 
-	 */
-	public static void hyperNEATOverrides() throws NoSuchMethodException {
-		// Already set to 1 as default value
-		//HyperNEATCPPNGenotype.numCPPNOutputsPerLayerPair = 1;
-
-		// Cannot monitor inputs with HyperNEAT because the NetworkTask
-		// interface no longer applies
-		CommonConstants.monitorInputs = false;
-		// Setting the common constant should be sufficient, but keeping the parameter means
-		// that hybrID can turn it back on if it needs to
-		//Parameters.parameters.setBoolean("monitorInputs", false);
-
-		substrateMapping = (SubstrateCoordinateMapping) ClassCreation.createObject("substrateMapping");
-
-		// This substrate mapping does not require all CPPN inputs
-		if(substrateMapping instanceof Bottom1DSubstrateMapping) {
-			// Other tasks may also use this mapping in the future.
-			HyperNEATTetrisTask.reduce2DTo1D = true;
-		}		
-		HyperNEATCPPNGenotype.normalizedNodeMemory = Parameters.parameters.booleanParameter("normalizedNodeMemory");
 	}
 
 	/**
@@ -524,9 +420,7 @@ public class MMNEAT {
 		ea = null;
 		genotype = null;
 		experiment = null;
-		performanceLog = null;
 		EvolutionaryHistory.archetypes = null;
-		Executor.close();
 	}
 
 	/**
@@ -678,38 +572,7 @@ public class MMNEAT {
 			Parameters.initializeParameterCollections(args); // file should exist
 			loadClasses();
 			process(runs);
-		} else if (args[0].startsWith("utStudyTeammate:")) {
-			// This launch code is associated with the 2018 Human Subject Study using
-			// Unreal Tournament 2004. The purpose is to evaluate different types of
-			// teammates in team deathmatch.
-			
-			Parameters.initializeParameterCollections(args);
-			String teammateString = Parameters.parameters.stringParameter("utStudyTeammate");
-			HumanSubjectStudy2018TeammateServer.BOT_TYPE type; 
-			switch(teammateString) {
-			case "none":
-				type = HumanSubjectStudy2018TeammateServer.BOT_TYPE.None;
-				break;
-			case "jude":
-				type = HumanSubjectStudy2018TeammateServer.BOT_TYPE.Jude;
-				break;
-			case "ethan":
-				type = HumanSubjectStudy2018TeammateServer.BOT_TYPE.Ethan;
-				break;
-			case "native":
-				type = HumanSubjectStudy2018TeammateServer.BOT_TYPE.Native;
-				break;
-			default:
-				throw new IllegalArgumentException("utStudyTeammate parameter must be ethan, jude, or native");
-			}
-			try {
-				HumanSubjectStudy2018TeammateServer.runTrial(type);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.out.println("\n\n\n");
-				System.out.println("This trial terminated unexpectedly. Please inform the researcher immediately.");
-				System.exit(1);
-			}
+		
 		} else if(args[0].startsWith("zeldaType:")){
 			
 			Parameters.initializeParameterCollections(args);
@@ -729,13 +592,7 @@ public class MMNEAT {
 				throw new IllegalArgumentException("zeldaType : " + type + " unrecognized. (original, generated, tutorial)");
 			}
 			HumanSubjectStudy2019Zelda.runTrial(t);
-		} else if(args[0].equals("minecraftBlocks")){
-			String[] reducedArgs = new String[args.length - 1];
-			System.arraycopy(args, 1, reducedArgs, 0, reducedArgs.length);
-			Parameters.initializeParameterCollections(reducedArgs);
-			MinecraftBlockRenderExperiment experiment = new MinecraftBlockRenderExperiment();
-			experiment.init();
-			experiment.run();
+
 		} else if(args[0].equals("binMario")){
 			try {
 				BinOriginalMarioLevels.main(new String[0]);
@@ -756,9 +613,9 @@ public class MMNEAT {
 			evolutionaryRun(args);
 		}
 		System.out.println("done: " + (((System.currentTimeMillis() - start) / 1000.0) / 60.0) + " minutes");
-		if (!(task instanceof MultipleFunctionOptimization) && !(task instanceof FunctionOptimizationTask)) {
-			System.exit(1);
-		}
+
+		System.exit(1);
+
 	}
 
 	/**
@@ -768,15 +625,7 @@ public class MMNEAT {
 	private static void evolutionaryRun(String[] args) {
 		// Commandline
 		mmneat = new MMNEAT(args);
-		if (CommonConstants.replayPacman) {
-			if (CommonConstants.showNetworks) {
-				String replayNetwork = Parameters.parameters.stringParameter("replayNetwork");
-				FileUtilities.drawTWEANN(replayNetwork);
-			}
-			ExecutorFacade ef = new ExecutorFacade(new Executor());
-			ef.replayGame(Parameters.parameters.stringParameter("pacmanSaveFile"), CommonConstants.watch);
-			System.exit(1);
-		}
+
 		String branchRoot = Parameters.parameters.stringParameter("branchRoot");
 		String lastSavedDirectory = Parameters.parameters.stringParameter("lastSavedDirectory");
 		if (branchRoot != null && !branchRoot.isEmpty()
@@ -802,9 +651,7 @@ public class MMNEAT {
 	 * Checks for logs that aren't null, closes them and sets them to null.
 	 */
 	public static void closeLogs() {
-		if (performanceLog != null) {
-			performanceLog.close();
-		}
+
 		if (EvolutionaryHistory.tweannLog != null) {
 			EvolutionaryHistory.tweannLog.close();
 			EvolutionaryHistory.tweannLog = null;
@@ -842,18 +689,5 @@ public class MMNEAT {
 		}
 	}
 
-	/**
-	 * Write information to the performance log, if it is being used
-	 * 
-	 * @param <T> phenotype
-	 * @param combined
-	 *            Combined population of scores/genotypes
-	 * @param generation
-	 *            Current generation information is being logged for
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> void logPerformanceInformation(ArrayList<Score<T>> combined, int generation) {
-		if (performanceLog != null)
-			performanceLog.log(combined, generation);
-	}
+
 }
