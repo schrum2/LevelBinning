@@ -11,13 +11,10 @@ import java.util.List;
 
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.EvolutionaryHistory;
-import edu.southwestern.evolution.genotypes.HyperNEATCPPNGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNGenotype.LinkGene;
 import edu.southwestern.evolution.genotypes.TWEANNGenotype.NormalizedMemoryNodeGene;
 import edu.southwestern.evolution.lineage.Offspring;
-import edu.southwestern.networks.hyperneat.HyperNEATVisualizationUtil;
-import edu.southwestern.networks.hyperneat.Substrate;
 import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.util.CombinatoricUtilities;
@@ -722,9 +719,6 @@ public class TWEANN implements Network {
 		}
 
 		if (canDraw) {
-			if(!HyperNEATCPPNGenotype.constructingNetwork && CommonConstants.hyperNEAT && CommonConstants.monitorSubstrates) {
-				animateSubstrate();
-			}
 			if (panel != null && Parameters.parameters.booleanParameter("animateNetwork")) {
 				draw(panel);
 			}
@@ -816,24 +810,6 @@ public class TWEANN implements Network {
 			GraphicsUtil.linePlot(preferenceNeuronPanel, -1, 1, preferenceActivationHistory[i],
 					CombinatoricUtilities.colorFromInt(i));
 		}
-	}
-
-	// Only used within substrate networks to visualize substrate activations
-	private List<Substrate> substrateInformation = null;
-	public void passSubstrateInformation(List<Substrate> substrateInformation) {
-		this.substrateInformation = substrateInformation;
-	}
-	
-	/**
-	 * Creates and updates visuals of substrates used by h-neat tetris task 
-	 */
-	public void animateSubstrate() {
-//			for(Substrate s : substrateInformation) { 
-//				System.out.println(s);
-//			}
-			HyperNEATVisualizationUtil.drawSubstrates(nodes, substrateInformation);
-			//tweannGenotype has getLinkBetween
-			//just need to find a way to get neuron innovation numbers
 	}
 
 	private static void refreshActivation(DrawingPanel inputPanel, double[] inputs, double[] outputs, double[] preferences, boolean multitask, double[] preferenceFatigue) {

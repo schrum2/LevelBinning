@@ -1,7 +1,5 @@
 package edu.southwestern.networks.activationfunctions;
 
-import org.nd4j.linalg.activations.Activation;
-
 public class ClippedAbsValFunction extends HalfLinearPiecewiseFunction {
 	/**
 	 * Absolute value function for x. Uses Math.abs();
@@ -14,11 +12,6 @@ public class ClippedAbsValFunction extends HalfLinearPiecewiseFunction {
 	@Override
 	public double f(double x) {
 		return super.f(Math.abs(x));
-	}
-	
-	@Override
-	public Activation equivalentDL4JFunction() {
-		throw new UnsupportedOperationException("No corresponding DL4J function for " + name());
 	}
 
 	@Override
