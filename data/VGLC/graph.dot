@@ -1,0 +1,30 @@
+graph {
+LJXX[label="s"]
+BUQJ[label="e"]
+UTOY[label="sl"]
+PAYC[label="e"]
+REUK[label="e"]
+SDAF[label="e"]
+FYYU[label="k"]
+PJJW[label="l"]
+MLHX[label="e"]
+ETDG[label="e"]
+WSYG[label="t"]
+JNWD[label="e"]
+KTYH[label="e"]
+LJXX -- BUQJ
+LJXX -- UTOY
+LJXX -- PAYC
+LJXX -- REUK
+UTOY -- SDAF
+UTOY -- PAYC
+PAYC -- FYYU
+PAYC -- REUK
+FYYU -- PJJW
+FYYU -- MLHX
+PJJW -- ETDG
+ETDG -- WSYG
+ETDG -- JNWD
+ETDG -- KTYH
+WSYG -- KTYH
+}
