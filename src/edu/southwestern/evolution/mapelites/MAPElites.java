@@ -25,6 +25,7 @@ import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.LonerTask;
+import edu.southwestern.tasks.loderunner.LodeRunnerLevelTask;
 import edu.southwestern.util.PopulationUtil;
 import edu.southwestern.util.PythonUtil;
 import edu.southwestern.util.datastructures.ArrayUtil;
@@ -450,18 +451,18 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 				
 			}			
 			// Special code for Lode Runner
-//			if(MMNEAT.task instanceof LodeRunnerLevelTask) {
-//				int numBeatenLevels = 0;
-//				for(Float x : elite) {
-//					// If A* fitness is used, then unbeatable levels have a score of -1 and thus won't be counted here.
-//					// If A*/Connectivity combo is used, then a connectivity percentage in (0,1) means the level is not beatable.
-//					// Score will only be greater than 1 if there is an actual A* path.
-//					if(x >= 1.0) {
-//						numBeatenLevels++;
-//					}
-//				}
-//				((LodeRunnerLevelTask<?>)MMNEAT.task).beatable.log(pseudoGeneration + "\t" + numBeatenLevels + "\t" + ((1.0*numBeatenLevels)/(1.0*numFilledBins)));
-//			}
+			if(MMNEAT.task instanceof LodeRunnerLevelTask) {
+				int numBeatenLevels = 0;
+				for(Float x : elite) {
+					// If A* fitness is used, then unbeatable levels have a score of -1 and thus won't be counted here.
+					// If A*/Connectivity combo is used, then a connectivity percentage in (0,1) means the level is not beatable.
+					// Score will only be greater than 1 if there is an actual A* path.
+					if(x >= 1.0) {
+						numBeatenLevels++;
+					}
+				}
+				((LodeRunnerLevelTask<?>)MMNEAT.task).beatable.log(pseudoGeneration + "\t" + numBeatenLevels + "\t" + ((1.0*numBeatenLevels)/(1.0*numFilledBins)));
+			}
 			
 			if (emitterMeanLog != null) { 
 				boolean backupNetIO = CommonConstants.netio;
