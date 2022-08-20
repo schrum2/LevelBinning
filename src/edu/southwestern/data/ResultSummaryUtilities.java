@@ -1,6 +1,5 @@
 package edu.southwestern.data;
 
-import edu.southwestern.log.PerformanceLog;
 import edu.southwestern.log.TWEANNLog;
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.parameters.Parameters;
@@ -66,11 +65,11 @@ public class ResultSummaryUtilities {
 				int inputNum = averageConditionResults(dirPrefix, filePrefix, "_TWEANNData_log.txt", runs, outputDir);
 				plotInfoFile(filePrefix, "_TWEANNData_log", inputNum, outputDir, TWEANNLog.getLabels());
 			}
-			if (Parameters.parameters.booleanParameter("logPerformance")) {
-				System.out.println("Performance Info: " + outputDir + "/" + filePrefix + "AVG" + logSuffix);
-				int inputNum = averageConditionResults(dirPrefix, filePrefix, "_Performance_log.txt", runs, outputDir);
-				plotInfoFile(filePrefix, "_Performance_log", inputNum, outputDir, PerformanceLog.getLabels());
-			}
+//			if (Parameters.parameters.booleanParameter("logPerformance")) {
+//				System.out.println("Performance Info: " + outputDir + "/" + filePrefix + "AVG" + logSuffix);
+//				int inputNum = averageConditionResults(dirPrefix, filePrefix, "_Performance_log.txt", runs, outputDir);
+//				plotInfoFile(filePrefix, "_Performance_log", inputNum, outputDir, PerformanceLog.getLabels());
+//			}
 		}
 	}
 
