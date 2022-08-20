@@ -24,9 +24,6 @@ import edu.southwestern.evolution.genotypes.CPPNOrBlockVectorGenotype;
 import edu.southwestern.evolution.genotypes.CPPNOrDirectToGANGenotype;
 import edu.southwestern.evolution.genotypes.CombinedGenotype;
 import edu.southwestern.evolution.genotypes.Genotype;
-import edu.southwestern.evolution.genotypes.HyperNEATCPPNAndSubstrateArchitectureGenotype;
-import edu.southwestern.evolution.genotypes.HyperNEATCPPNGenotype;
-import edu.southwestern.evolution.genotypes.HyperNEATCPPNforDL4JGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNPlusParametersGenotype;
 import edu.southwestern.evolution.lineage.Offspring;
@@ -37,7 +34,6 @@ import edu.southwestern.evolution.nsga2.NSGA2;
 import edu.southwestern.evolution.nsga2.NSGA2Score;
 import edu.southwestern.networks.NetworkTask;
 import edu.southwestern.networks.TWEANN;
-import edu.southwestern.networks.hyperneat.HyperNEATTask;
 import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Better;
@@ -274,11 +270,11 @@ public class PopulationUtil {
 					for (int i = 0; i < size; i++) {
 						afrr.mutate((Genotype<TWEANN>) ((CPPNOrBlockVectorGenotype) parents.get(i)).getCurrentGenotype());
 					}	
-				} else if(parents.get(0) instanceof HyperNEATCPPNforDL4JGenotype) {
-					// Mutate the CPPN within the HyperNEATCPPNforDL4JGenotype
-					for (int i = 0; i < size; i++) {
-						afrr.mutate(((HyperNEATCPPNforDL4JGenotype) parents.get(i)).getCPPN());
-					}	
+//				} else if(parents.get(0) instanceof HyperNEATCPPNforDL4JGenotype) {
+//					// Mutate the CPPN within the HyperNEATCPPNforDL4JGenotype
+//					for (int i = 0; i < size; i++) {
+//						afrr.mutate(((HyperNEATCPPNforDL4JGenotype) parents.get(i)).getCPPN());
+//					}	
 				} else {
 					throw new IllegalArgumentException("Cannot change activation function of genotype that has no network: " + parents.get(0).getClass().getName());
 				}
@@ -484,7 +480,6 @@ public class PopulationUtil {
 		if (loaded instanceof Genotype) {
 			individual = (Genotype<T>) loaded;
 			System.out.println(", ID = " + individual.getId());
-			assert !(loaded instanceof HyperNEATCPPNAndSubstrateArchitectureGenotype) || ((HyperNEATCPPNAndSubstrateArchitectureGenotype) individual).allSubstrateConnectivity.get(0).sourceSubstrateName != null;
 		}
 		return individual;
 	}
@@ -889,27 +884,7 @@ public class PopulationUtil {
 		}
 		return genos;
 	}
-	
-	/**
-	 * Converts an ArrayList of HyperNEAT CPPN genotypes to an ArrayList of corresponding 
-	 * TWEANN genotypes based on an input HyperNEATTask.
-	 * 
-	 * @param hnt HyperNEATTask used to define substrate description
-	 * @param population array list of HyperNEAT CPPN genotypes
-	 * @return array list of substrate genotypes from population ArrayList
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> ArrayList<Genotype<T>> getSubstrateGenotypesFromCPPNs(HyperNEATTask hnt, ArrayList<Genotype<T>> population, int archetypeIndex) {
-		ArrayList<Genotype<T>> substrateGenotypes = new ArrayList<>();
-		for(int i = 0; i < population.size(); i++) {
-			TWEANNGenotype genotype = ((HyperNEATCPPNGenotype) population.get(i)).getSubstrateGenotype(hnt);
-			// Since these networks will evolve now, they need a real archetype index
-			genotype.archetypeIndex = archetypeIndex;
-			substrateGenotypes.add((Genotype<T>) genotype);
-		}
-		return substrateGenotypes;
-	}
-	
+		
 	/**
 	 * Converts a double[][] population into an ArrayList<Genotype<ArrayList<Double>>>
 	 * @param Population to be converted
