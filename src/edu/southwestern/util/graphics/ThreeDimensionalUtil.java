@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.southwestern.networks.Network;
-import edu.southwestern.tasks.interactive.objectbreeder.ThreeDimensionalObjectBreederTask;
 import edu.southwestern.util.CartesianGeometricUtilities;
 import edu.southwestern.util.datastructures.Pair;
 import edu.southwestern.util.datastructures.Triangle;
@@ -20,6 +19,9 @@ import edu.southwestern.util.datastructures.Vertex;
  *
  */
 public class ThreeDimensionalUtil {
+	
+	public static final int ThreeDimensionalObjectBreederTask_CPPN_NUM_INPUTS = 5; //the number of inputs that the CPPN takes in
+	public static final int ThreeDimensionalObjectBreederTask_CPPN_NUM_OUTPUTS = 4; //minimum number of outputs
 	
 	public static final int THREE_DIMENSIONAL_VOXEL_INDEX = 0;
 	public static final int THREE_DIMENSIONAL_HUE_INDEX = 1;
@@ -221,7 +223,7 @@ public class ThreeDimensionalUtil {
 						double actualX = -(cubeSize*shapeWidth/2.0) + halfCube + x*cubeSize;
 						double actualY = -(cubeSize*shapeHeight/2.0) + halfCube + y*cubeSize;
 						double actualZ = -(cubeSize*shapeDepth/2.0) + halfCube + z*cubeSize; 
-						if(output.length > ThreeDimensionalObjectBreederTask.CPPN_NUM_OUTPUTS) { //if cube locations are displaced by CPPN
+						if(output.length > ThreeDimensionalObjectBreederTask_CPPN_NUM_OUTPUTS) { //if cube locations are displaced by CPPN
 							actualX += output[THREE_DIMENSIONAL_X_DISPLACEMENT_INDEX]*halfCube;
 							actualY += output[THREE_DIMENSIONAL_Y_DISPLACEMENT_INDEX]*halfCube;
 							actualZ += output[THREE_DIMENSIONAL_Z_DISPLACEMENT_INDEX]*halfCube;

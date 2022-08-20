@@ -10,7 +10,6 @@ import javax.imageio.stream.ImageOutputStream;
 
 import edu.southwestern.networks.Network;
 import edu.southwestern.parameters.Parameters;
-import edu.southwestern.tasks.interactive.objectbreeder.ThreeDimensionalObjectBreederTask;
 
 /**
  * Series of utility methods used to create and manipulate
@@ -20,7 +19,12 @@ import edu.southwestern.tasks.interactive.objectbreeder.ThreeDimensionalObjectBr
  *
  */
 public class AnimationUtil {
-
+	// From ThreeDimensionalObjectBreederTask
+	public static final int CUBE_SIDE_LENGTH = 10; //The length of the side of a voxel (all are same size)
+	public static final int SHAPE_WIDTH = 10; //the width of the overall shape (number of voxels)
+	public static final int SHAPE_HEIGHT = 15; //the height of the overall shape (number of voxels)
+	public static final int SHAPE_DEPTH = 10; //the depth of the overall shape (number of voxels)
+	
 	//default frame rate to smooth out animation
 	public static final double FRAMES_PER_SEC = 24.0;
 	
@@ -116,7 +120,7 @@ public class AnimationUtil {
 	public static BufferedImage[] shapesFromCPPN(Network n, int imageWidth, int imageHeight, int startTime, int endTime, Color color, double heading, double pitch, double[] inputMultiples) {
 		BufferedImage[] images = new BufferedImage[endTime-startTime];
 		for(int i = startTime; i < endTime; i++) {
-			images[i-startTime] = ThreeDimensionalUtil.currentImageFromCPPN(n, imageWidth, imageHeight, ThreeDimensionalObjectBreederTask.CUBE_SIDE_LENGTH, ThreeDimensionalObjectBreederTask.SHAPE_HEIGHT,ThreeDimensionalObjectBreederTask.SHAPE_WIDTH, ThreeDimensionalObjectBreederTask.SHAPE_DEPTH, color, heading, pitch, inputMultiples, i/FRAMES_PER_SEC, Parameters.parameters.booleanParameter("objectBreederDistanceInEachPlane"));
+			images[i-startTime] = ThreeDimensionalUtil.currentImageFromCPPN(n, imageWidth, imageHeight, CUBE_SIDE_LENGTH, SHAPE_HEIGHT, SHAPE_WIDTH, SHAPE_DEPTH, color, heading, pitch, inputMultiples, i/FRAMES_PER_SEC, Parameters.parameters.booleanParameter("objectBreederDistanceInEachPlane"));
 		}
 		return images;
 	}		
