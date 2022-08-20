@@ -414,7 +414,7 @@ public abstract class MuLambda<T> implements SinglePopulationGenerationalEA<T> {
 			ArrayList<Score<T>> combined = new ArrayList<Score<T>>(mu + lambda);
 			combined.addAll(parentScores);
 			combined.addAll(childrenScores);
-			MMNEAT.logPerformanceInformation(combined, generation);
+//			MMNEAT.logPerformanceInformation(combined, generation);
 		}
 		ArrayList<Genotype<T>> result = selectAndAdvance(parentScores, childrenScores);
 
