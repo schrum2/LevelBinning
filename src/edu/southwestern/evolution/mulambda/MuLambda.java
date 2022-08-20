@@ -9,25 +9,18 @@ import org.apache.commons.lang.StringUtils;
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.EvolutionaryHistory;
 import edu.southwestern.evolution.SinglePopulationGenerationalEA;
-import edu.southwestern.evolution.HybrIDUtil.HybrIDUtil;
 import edu.southwestern.evolution.genotypes.Genotype;
-import edu.southwestern.evolution.genotypes.OffsetHybrIDGenotype;
 import edu.southwestern.evolution.genotypes.TWEANNGenotype;
 import edu.southwestern.evolution.mapelites.MAPElites;
 import edu.southwestern.log.FitnessLog;
 import edu.southwestern.log.MMNEATLog;
 import edu.southwestern.log.PlotLog;
 import edu.southwestern.networks.TWEANN;
-import edu.southwestern.networks.hyperneat.architecture.CascadeNetworks;
 import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.SinglePopulationTask;
 import edu.southwestern.tasks.Task;
-import edu.southwestern.tasks.mspacman.MsPacManTask;
-import edu.southwestern.tasks.mspacman.init.MsPacManInitialization;
-import edu.southwestern.tasks.mspacman.multitask.DangerousAreaModeSelector;
-import edu.southwestern.tasks.mspacman.sensors.directional.scent.VariableDirectionKStepDeathScentBlock;
 import edu.southwestern.util.PopulationUtil;
 import edu.southwestern.util.datastructures.ArrayUtil;
 import edu.southwestern.util.stats.StatisticsUtilities;
@@ -84,28 +77,28 @@ public abstract class MuLambda<T> implements SinglePopulationGenerationalEA<T> {
 		this.lambda = lambda;
 		this.generation = Parameters.parameters.integerParameter("lastSavedGeneration");
 		writeOutput = Parameters.parameters.booleanParameter("io");
-		msPacMan = task instanceof MsPacManTask;
+		msPacMan = false; //task instanceof MsPacManTask;
 
 		if (writeOutput && io) {
 			parentLog = new FitnessLog<T>("parents");
 			if (CommonConstants.logChildScores) {
 				childLog = new FitnessLog<T>("child");
 			}
-			if (task instanceof MsPacManTask && (MMNEAT.modesToTrack > 1 || TWEANN.preferenceNeuron())) {
-				ArrayList<String> labels = new ArrayList<String>();
-				labels.add("Max Modes of Best");
-				labels.add("Min Modes of Best");
-				labels.add("Avg Modes of Best");
-				labels.add("Max Modes of Worst");
-				labels.add("Min Modes of Worst");
-				labels.add("Avg Modes of Worst");
-				int i;
-				for (i = 1; i <= MAX_MODE_OF_LOG_INTEREST; i++) {
-					labels.add(i + " Mode Best");
-				}
-				labels.add("More Than " + i + " Modes Best");
-				modeLog = new PlotLog("ModeUsage", labels);
-			}
+//			if (task instanceof MsPacManTask && (MMNEAT.modesToTrack > 1 || TWEANN.preferenceNeuron())) {
+//				ArrayList<String> labels = new ArrayList<String>();
+//				labels.add("Max Modes of Best");
+//				labels.add("Min Modes of Best");
+//				labels.add("Avg Modes of Best");
+//				labels.add("Max Modes of Worst");
+//				labels.add("Min Modes of Worst");
+//				labels.add("Avg Modes of Worst");
+//				int i;
+//				for (i = 1; i <= MAX_MODE_OF_LOG_INTEREST; i++) {
+//					labels.add(i + " Mode Best");
+//				}
+//				labels.add("More Than " + i + " Modes Best");
+//				modeLog = new PlotLog("ModeUsage", labels);
+//			}
 		}
 	}
 	
@@ -304,19 +297,7 @@ public abstract class MuLambda<T> implements SinglePopulationGenerationalEA<T> {
 		generation++;
 		EvolutionaryHistory.frozenPreferenceVsPolicyStatusUpdate(newParents, generation);
 		CommonConstants.trialsByGenerationUpdate(generation);
-		if(msPacMan) { // Pacman-specific updates
-			if (Parameters.parameters.booleanParameter("scalePillsByGen")) { // For pacman
-				Parameters.parameters.setDouble("preEatenPillPercentage", 1.0 - ((generation * 1.0) / Parameters.parameters.integerParameter("maxGens")));
-			}
-			if (Parameters.parameters.booleanParameter("incrementallyDecreasingEdibleTime")) { // For pacman
-				MsPacManInitialization.setEdibleTimeBasedOnGeneration(generation);
-			}
-			if (Parameters.parameters.booleanParameter("incrementallyDecreasingLairTime")) { // For pacman
-				MsPacManInitialization.setLairTimeBasedOnGeneration(generation);
-			}
-			VariableDirectionKStepDeathScentBlock.updateScentMaps(); // For pacman
-			DangerousAreaModeSelector.updateScentMaps(); // For pacman
-		}
+
 		return newParents;
 	}
 
@@ -436,18 +417,7 @@ public abstract class MuLambda<T> implements SinglePopulationGenerationalEA<T> {
 			MMNEAT.logPerformanceInformation(combined, generation);
 		}
 		ArrayList<Genotype<T>> result = selectAndAdvance(parentScores, childrenScores);
-		if(CommonConstants.hybrID && currentGeneration() == Parameters.parameters.integerParameter("hybrIDSwitchGeneration")) {	
-			if(Parameters.parameters.booleanParameter("offsetHybrID")) { //offsetHybrid is being used
-				result = OffsetHybrIDGenotype.getSubstrateGenotypesFromCPPNs(result);
-			} else { //if preset-switch HybrID is being used
-				result = HybrIDUtil.switchPhenotypeToNEAT(result);
-			}
-		}
-		
-		if(CommonConstants.cascadeExpansion && currentGeneration() != 0 && currentGeneration() % Parameters.parameters.integerParameter("cascadeExpansionGenerationInterval") == 0) {
-			//adds a hidden convolutional substrate in between the last hidden substrate and the output for each member of the population if the receptive field size allows for it
-			result = CascadeNetworks.cascadeExpandAllGenotypes(result);
-		}
+
 		return result;
 	}
 
