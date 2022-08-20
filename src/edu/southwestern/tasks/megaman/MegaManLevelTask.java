@@ -28,7 +28,6 @@ import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.NoisyLonerTask;
-import edu.southwestern.tasks.export.JsonLevelGenerationTask;
 import edu.southwestern.tasks.interactive.megaman.MegaManCPPNtoGANLevelBreederTask;
 import edu.southwestern.tasks.mario.gan.GANProcess;
 import edu.southwestern.tasks.megaman.astar.MegaManState;
@@ -48,7 +47,7 @@ import edu.southwestern.util.graphics.GraphicsUtil;
  *
  *
  */
-public abstract class MegaManLevelTask<T> extends NoisyLonerTask<T> implements JsonLevelGenerationTask<T>{	
+public abstract class MegaManLevelTask<T> extends NoisyLonerTask<T>{	
 	private int numFitnessFunctions = 0; 
 	private static final int NUM_OTHER_SCORES = 12;
 

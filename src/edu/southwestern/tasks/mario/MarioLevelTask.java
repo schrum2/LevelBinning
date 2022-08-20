@@ -30,7 +30,6 @@ import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.NoisyLonerTask;
-import edu.southwestern.tasks.export.JsonLevelGenerationTask;
 import edu.southwestern.tasks.interactive.mario.MarioCPPNtoGANLevelBreederTask;
 import edu.southwestern.tasks.interactive.mario.MarioLevelBreederTask;
 import edu.southwestern.tasks.mario.gan.GANProcess;
@@ -61,7 +60,7 @@ import edu.southwestern.util.search.Search;
  *
  * @param <T>
  */
-public abstract class MarioLevelTask<T> extends NoisyLonerTask<T> implements JsonLevelGenerationTask<T> {	
+public abstract class MarioLevelTask<T> extends NoisyLonerTask<T>  {	
 
 	public static final int SEGMENT_WIDTH_IN_BLOCKS = 28; // GAN training window
 	private static final int PIXEL_BLOCK_WIDTH = 16; // Is this right?
