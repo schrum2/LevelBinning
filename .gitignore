@@ -23,3 +23,5 @@
 hs_err_pid*
 replay_pid*
 .settings/org.eclipse.jdt.core.prefs
+
+bin/
