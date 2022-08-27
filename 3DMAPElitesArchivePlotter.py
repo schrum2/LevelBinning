@@ -115,18 +115,30 @@ xmax = float("-inf")
 ymax = float("-inf")
 zmax = float("-inf")
 
-# Figure out where to place red outline
-for x in range(0,len(archive_slice_arrays)):
-    for y in range(0,len(archive_slice_arrays[x])):
-        for z in range(0,len(archive_slice_arrays[x][y])):
-            if archive_slice_arrays[x][y][z] > float("-inf"):
-                xmin = min(xmin,x)
-                ymin = min(ymin,y)
-                zmin = min(zmin,z)
+# The restricted range was specified at the command line.
+# Will draw the red box in a certain place, even if some
+# bins outside of it are occupied
+if len(sys.argv) > 12:
+    xmin = sys.argv[12]
+    ymin = sys.argv[13]
+    zmin = sys.argv[14]
 
-                xmax = max(xmax,x)
-                ymax = max(ymax,y)
-                zmax = max(zmax,z)
+    xmax = sys.argv[15]
+    ymax = sys.argv[16]
+    zmax = sys.argv[17]
+else:
+    # Figure out where to place red outline
+    for x in range(0,len(archive_slice_arrays)):
+        for y in range(0,len(archive_slice_arrays[x])):
+            for z in range(0,len(archive_slice_arrays[x][y])):
+                if archive_slice_arrays[x][y][z] > float("-inf"):
+                    xmin = min(xmin,x)
+                    ymin = min(ymin,y)
+                    zmin = min(zmin,z)
+
+                    xmax = max(xmax,x)
+                    ymax = max(ymax,y)
+                    zmax = max(zmax,z)
 
 print(f"{xmin} {xmax}")
 print(f"{ymin} {ymax}")

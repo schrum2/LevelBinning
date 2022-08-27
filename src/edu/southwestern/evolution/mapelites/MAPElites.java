@@ -245,10 +245,11 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 				ps.print(" \""+dimensionNames[i]+"\" "+dimensionSizes[i]);
 			}
 			if (dimensionNames.length == 3) { // add min/max batch params
-				ps.print(" 2 %1 %2"); // add row param if 3
-			} else {
-				ps.print(" %1 %2");
-			}
+				ps.print(" 2"); // add row param if 3
+			} 
+			// add min/max batch params and bounds for binning red box (designed for 3D. Excess parameters for 2D)
+			ps.print(" %1 %2 %3 %4 %5 %6 %7 %8");
+			
 			ps.close();
 			
 			ps = new PrintStream(new File(archiveAnimationBatchName));
