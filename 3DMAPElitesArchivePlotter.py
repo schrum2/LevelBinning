@@ -119,13 +119,13 @@ zmax = float("-inf")
 # Will draw the red box in a certain place, even if some
 # bins outside of it are occupied
 if len(sys.argv) > 12:
-    xmin = sys.argv[12]
-    ymin = sys.argv[13]
-    zmin = sys.argv[14]
+    xmin = int(sys.argv[12])
+    ymin = int(sys.argv[13])
+    zmin = int(sys.argv[14])
 
-    xmax = sys.argv[15]
-    ymax = sys.argv[16]
-    zmax = sys.argv[17]
+    xmax = int(sys.argv[15])
+    ymax = int(sys.argv[16])
+    zmax = int(sys.argv[17])
 else:
     # Figure out where to place red outline
     for x in range(0,len(archive_slice_arrays)):
