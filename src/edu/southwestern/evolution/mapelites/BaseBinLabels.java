@@ -22,4 +22,10 @@ public abstract class BaseBinLabels implements BinLabels {
 		// irrelevant bins are not stored.
 		return false;
 	}
+	
+	@Override
+	public boolean isOutsideRestrictedRange(int[] multi) {
+		// By default, there is no restricted range
+		return false;
+	}
 }

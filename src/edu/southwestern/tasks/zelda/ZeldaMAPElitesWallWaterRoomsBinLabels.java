@@ -24,6 +24,14 @@ public class ZeldaMAPElitesWallWaterRoomsBinLabels extends BaseBinLabels {
 		
 		int[] multi = multiDimensionalIndices(behaviorMap);
 		
+		return isOutsideRestrictedRange(multi);
+	}
+
+	/**
+	 * @param multi
+	 * @return
+	 */
+	public boolean isOutsideRestrictedRange(int[] multi) {
 		int wallTileIndex = multi[0];
 		int waterTileIndex = multi[1];
 		int numRoomsReachable = multi[2];

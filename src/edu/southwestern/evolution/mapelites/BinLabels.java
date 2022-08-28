@@ -66,4 +66,11 @@ public interface BinLabels {
 	 */
 	public boolean discard(HashMap<String, Object> behaviorMap);
 	
+	/**
+	 * If range restriction is possible, indicates whether a multi-dimensional point is outside of the range.
+	 * @param multi multi-dimensional index
+	 * @return if index is outside of range
+	 */
+	public boolean isOutsideRestrictedRange(int[] multi);
+	
 }

@@ -16,6 +16,14 @@ import org.apache.commons.lang.ArrayUtils;
  */
 public class ArrayUtil {
 
+	public static Float[] doubleArrayToFloatArray(double[] input) {
+		Float[] result = new Float[input.length];
+		for(int i = 0; i < result.length; i++) {
+			result[i] = Float.valueOf((float) input[i]);
+		}
+		return result;
+	}
+	
 	/**
 	 * Remove all instances of toRemove from the String array.
 	 * There is probably a better way to do this with streams in the latest version of Java.

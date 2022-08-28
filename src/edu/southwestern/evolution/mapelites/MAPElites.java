@@ -184,7 +184,8 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 			
 			ps.println("set title \"" + experimentPrefix + " Archive Filled Bins\"");
 			ps.println("set output \"" + fullFillName.substring(fullFillName.lastIndexOf('/')+1, fullFillName.lastIndexOf('.')) + ".pdf\"");
-			ps.println("plot \"" + name + ".txt\" u 1:2 w linespoints t \"Total\"" + (cppnDirLogging ? ", \\" : ""));
+			ps.println("plot \"" + name + ".txt\" u 1:2 w linespoints t \"Total\", \\");
+			ps.println("     \"" + name + ".txt\" u 1:6 w linespoints t \"Restricted\"" + (cppnDirLogging ? ", \\" : ""));
 			if(cppnDirLogging) { // Print CPPN and direct counts on same plot
 				ps.println("     \"" + name.replace("Fill", "cppnToDirect") + ".txt\" u 1:2 w linespoints t \"CPPNs\", \\");
 				ps.println("     \"" + name.replace("Fill", "cppnToDirect") + ".txt\" u 1:3 w linespoints t \"Vectors\"");
@@ -192,11 +193,13 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 			
 			ps.println("set title \"" + experimentPrefix + " Archive QD Scores\"");
 			ps.println("set output \"" + fullQDName.substring(fullQDName.lastIndexOf('/')+1, fullQDName.lastIndexOf('.')) + ".pdf\"");
-			ps.println("plot \"" + name + ".txt\" u 1:3 w linespoints t \"QD Score\"");
+			ps.println("plot \"" + name + ".txt\" u 1:3 w linespoints t \"QD Score\", \\");
+			ps.println("     \"" + name + ".txt\" u 1:7 w linespoints t \"Restricted QD Score\"");
 			
 			ps.println("set title \"" + experimentPrefix + " Maximum individual fitness score");
 			ps.println("set output \"" + maxFitnessName.substring(maxFitnessName.lastIndexOf('/')+1, maxFitnessName.lastIndexOf('.')) + ".pdf\"");
-			ps.println("plot \"" + name + ".txt\" u 1:4 w linespoints t \"Maximum fitness Score\"");
+			ps.println("plot \"" + name + ".txt\" u 1:4 w linespoints t \"Maximum Fitness Score\", \\");
+			ps.println("     \"" + name + ".txt\" u 1:8 w linespoints t \"Restricted Maximum Fitness Score\"");
 			
 			if(Parameters.parameters.booleanParameter("dynamicAutoencoderIntervals")) {
 				ps.println("set title \"" + experimentPrefix + " Reconstruction Loss Range");
@@ -427,7 +430,16 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 			final int numFilledBins = elite.length - ArrayUtil.countOccurrences(Float.NEGATIVE_INFINITY, elite);
 			// Get the QD Score for this elite
 			final double qdScore = calculateQDScore(elite);
-			fillLog.log(pseudoGeneration + "\t" + numFilledBins + "\t" + qdScore + "\t" + maximumFitness + "\t" + iterationsWithoutEliteCounter);
+			
+			BinLabels labels = MMNEAT.getArchiveBinLabelsClass();
+			Stream<Score<T>> stream = archive.archive.parallelStream().filter(s -> s != null && !labels.isOutsideRestrictedRange(s.MAPElitesBinIndex()));
+			double[] restrictedScores = stream.mapToDouble(s -> s.behaviorIndexScore()).toArray();
+			final int restrictedFilled = restrictedScores.length;
+			final double restrictedQD = calculateQDScore(ArrayUtil.doubleArrayToFloatArray(restrictedScores));
+			final double restrictedMaxFitness = StatisticsUtilities.maximum(restrictedScores);
+			
+			fillLog.log(pseudoGeneration + "\t" + numFilledBins   + "\t" + qdScore    + "\t" + maximumFitness + "\t" + iterationsWithoutEliteCounter + 
+					                       "\t" + restrictedFilled+ "\t" +restrictedQD+ "\t" +restrictedMaxFitness);
 			if(cppnThenDirectLog!=null) {
 				Integer[] eliteProper = new Integer[elite.length];
 				int i = 0;
