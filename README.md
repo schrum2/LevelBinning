@@ -27,3 +27,5 @@
 
    - Windows: Inside `batch` directory with PowerShell or Command: `0-ZeldaPre-BinDungeons.bat`
    - OSX/Unix: From root project directory: `bash runscript.bash 0-MarioPre-BinLevels.bat`
+
+8. Code can also be run from Eclipse. The main class is `MMNEAT` but command line parameters will be needed to do anything interesting (see batch files).
