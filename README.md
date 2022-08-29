@@ -11,7 +11,7 @@
      - If troubles, check: [how to install Java on Mac OS](https://mkyong.com/java/how-to-install-java-on-mac-osx/) 
    - Windows: [Java 8 for Windows](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) 
 
-2. Install [Python 3.9](https://www.python.org/downloads/release/python-390/)
+2. Install [Python 3.8](https://www.python.org/downloads/release/python-380/)
 
 3. `pip install -r requirements.txt`
 
@@ -20,3 +20,10 @@
 5. Compile the Java code with [Apache ANT](https://ant.apache.org/)
 
    - `ant -f build.xml`
+
+6. The file `MMNEAT.jar` is created, and can be executed from the command line with `java -jar MMNEAT.jar`
+
+7. The `batch` directory contains batch files that can run on Windows.
+
+   - Windows: Inside `batch` directory with PowerShell or Command: `0-ZeldaPre-BinDungeons.bat`
+   - OSX/Unix: From root project directory: `bash runscript.bash 0-MarioPre-BinLevels.bat`
