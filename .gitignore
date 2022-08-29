@@ -28,3 +28,5 @@ bin/
 dagstuhl*/
 mariopdsl/
 zeldadungeonswallwaterrooms/
+python/GAN/models/__pycache__/dcgan.cpython-38.pyc
+python/GAN/models/__pycache__/cdcgan.cpython-38.pyc
