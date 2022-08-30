@@ -29,3 +29,15 @@
    - OSX/Unix: From root project directory: `bash runscript.bash 0-MarioPre-BinLevels.bat`
 
 8. Code can also be run from Eclipse. The main class is `MMNEAT` but command line parameters will be needed to do anything interesting (see batch files).
+
+#### Note for M1 Mac Users: 
+
+One way to install torch is by pretending you are on an x64 machine with Rosetta, and you might have luck creating a Rosetta integrated terminal in Visual Studio Code. You can create a Rosetta terminal by adding the following to your User or Workplace Settings (JSON):
+
+ ```
+ "rosetta": {
+            "path": "arch",
+            "args": ["-x86_64", "bash", "-l"],
+            "overrideName": true
+          }
+```
