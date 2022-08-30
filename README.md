@@ -41,3 +41,10 @@ One way to install torch is by pretending you are on an x64 machine with Rosetta
             "overrideName": true
           }
 ```
+
+#### Note for jenv Users: 
+To build the ant script with a specific version of java specified by jenv, enable the ant plugin for jenv:
+
+```
+>$jenv enable-plugin ant
+```
