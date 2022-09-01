@@ -52,7 +52,7 @@ public class CompareMAPElitesBinningSchemeExperiment<T> implements Experiment {
 	public void run() {
 		String lastLine = "";
 		try {
-			String fillLogName = FileUtilities.getSaveDirectory() + File.pathSeparator
+			String fillLogName = FileUtilities.getSaveDirectory() + File.separator
 					+ Parameters.parameters.stringParameter("log") + Parameters.parameters.integerParameter("runNumber")
 					+ "_Fill_log.txt";// creates file prefix
 			File oldFill = new File(fillLogName);
