@@ -31,9 +31,9 @@ import edu.southwestern.util.file.XMLFilter;
 import edu.southwestern.util.stats.StatisticsUtilities;
 
 /**
- * Experiment for comparing different MAP Elites 
- * binning schemes post-experiment in order to see 
- * how well a scheme actually does at filling an 
+ * Experiment for comparing different MAP Elites
+ * binning schemes post-experiment in order to see
+ * how well a scheme actually does at filling an
  * archive. Be careful when using multi-threading,
  * see comment on line 83
  * 
@@ -42,7 +42,7 @@ import edu.southwestern.util.stats.StatisticsUtilities;
 public class CompareMAPElitesBinningSchemeExperiment<T> implements Experiment {
 
 	MAPElites<T> newMAPElites;
-	
+
 	@Override
 	public void init() {
 	}
@@ -52,7 +52,9 @@ public class CompareMAPElitesBinningSchemeExperiment<T> implements Experiment {
 	public void run() {
 		String lastLine = "";
 		try {
-			String fillLogName = FileUtilities.getSaveDirectory() + "\\" + Parameters.parameters.stringParameter("log") + Parameters.parameters.integerParameter("runNumber") + "_Fill_log.txt";// creates file prefix
+			String fillLogName = FileUtilities.getSaveDirectory() + File.pathSeparator
+					+ Parameters.parameters.stringParameter("log") + Parameters.parameters.integerParameter("runNumber")
+					+ "_Fill_log.txt";// creates file prefix
 			File oldFill = new File(fillLogName);
 			Scanner oldFile = new Scanner(oldFill);
 			while (oldFile.hasNextLine()) {
@@ -63,71 +65,77 @@ public class CompareMAPElitesBinningSchemeExperiment<T> implements Experiment {
 			e.printStackTrace();
 		}
 		String[] oldEndValues = lastLine.split("\t");
-		
+
 		String dir = MMNEAT.getArchive().getArchiveDirectory(); // get old directory
 		String binLabelName = Parameters.parameters.classParameter("mapElitesBinLabels").getName();
-		String binLabelOutName = "comparedTo_" + binLabelName.substring(1+binLabelName.lastIndexOf('.'));
-		String binLabelLastName = "comparedTo_" + binLabelName.substring(1+binLabelName.lastIndexOf('.')) + "_MAPElites";
+		String binLabelOutName = "comparedTo_" + binLabelName.substring(1 + binLabelName.lastIndexOf('.'));
+		String binLabelLastName = "comparedTo_" + binLabelName.substring(1 + binLabelName.lastIndexOf('.'))
+				+ "_MAPElites";
 		newMAPElites = new MAPElites<T>(binLabelOutName, true, true, false); // setup new MAP Elites with new directory
-		
+
 		MMNEAT.ea = newMAPElites; // set EA to new MAP Elites
 		Archive<T> comparedArchive = newMAPElites.getArchive(); // Get new archive
-		
-		FilenameFilter filter = (Parameters.parameters.booleanParameter("useWoxSerialization")) ? new XMLFilter() : new SERFilter();
-        
-        LonerTask task = (LonerTask) MMNEAT.task;
-        String[] directoryFiles = new File(dir).list(filter);
-    	if(Parameters.parameters.booleanParameter("parallelEvaluations")) {
-    		/*
-    		 * WARNING: Some binning schemes and tasks have global variables that are
-    		 * passed around, and multi-threading will mess up these variables and 
-    		 * invalidate data, make sure the task and binning schemes do not use
-    		 * globals, or use this without multi-threading.
-    		 */
-    		ExecutorService poolExecutor = Executors.newFixedThreadPool(Parameters.parameters.integerParameter("threads"));
-    		ArrayList<Future<Score<T>>> futures = new ArrayList<Future<Score<T>>>(directoryFiles.length);
-			
-    		ArrayList<EvaluationThread> calls = new ArrayList<EvaluationThread>(directoryFiles.length);
 
-    		for (int i = 0; i < directoryFiles.length; i++) {
-    			String oneFile = directoryFiles[i];
-    			EvaluationThread callable = new EvaluationThread(task, dir, oneFile);
-    			calls.add(callable);
-    		}
-    		
-    		for (int i = 0; i < directoryFiles.length; i++) { // get each xml, evaluate it, and add it to the new archive
-    			Future<Score<T>> future = poolExecutor.submit(calls.get(i));
-    			futures.add(future);
-        	}
-    		
-    		for (int i = 0; i < directoryFiles.length; i++) { // get each xml, evaluate it, and add it to the new archive
-        		try {
+		FilenameFilter filter = (Parameters.parameters.booleanParameter("useWoxSerialization")) ? new XMLFilter()
+				: new SERFilter();
+
+		LonerTask task = (LonerTask) MMNEAT.task;
+		String[] directoryFiles = new File(dir).list(filter);
+		if (Parameters.parameters.booleanParameter("parallelEvaluations")) {
+			/*
+			 * WARNING: Some binning schemes and tasks have global variables that are
+			 * passed around, and multi-threading will mess up these variables and
+			 * invalidate data, make sure the task and binning schemes do not use
+			 * globals, or use this without multi-threading.
+			 */
+			ExecutorService poolExecutor = Executors
+					.newFixedThreadPool(Parameters.parameters.integerParameter("threads"));
+			ArrayList<Future<Score<T>>> futures = new ArrayList<Future<Score<T>>>(directoryFiles.length);
+
+			ArrayList<EvaluationThread> calls = new ArrayList<EvaluationThread>(directoryFiles.length);
+
+			for (int i = 0; i < directoryFiles.length; i++) {
+				String oneFile = directoryFiles[i];
+				EvaluationThread callable = new EvaluationThread(task, dir, oneFile);
+				calls.add(callable);
+			}
+
+			for (int i = 0; i < directoryFiles.length; i++) { // get each xml, evaluate it, and add it to the new
+																// archive
+				Future<Score<T>> future = poolExecutor.submit(calls.get(i));
+				futures.add(future);
+			}
+
+			for (int i = 0; i < directoryFiles.length; i++) { // get each xml, evaluate it, and add it to the new
+																// archive
+				try {
 					comparedArchive.add(futures.get(i).get());
 				} catch (InterruptedException | ExecutionException ex) {
 					ex.printStackTrace();
 					System.exit(1);
 				}
-        	}
-        	
-        	
-        } else {
-        	for (String oneFile : directoryFiles) { // get each xml, evaluate it, and add it to the new archive
-        		Genotype<T> geno = (Genotype<T>) Serialization.load(dir+"\\"+oneFile);
-        		Score<T> evalScore = task.evaluateOne(geno);
-        		comparedArchive.add(evalScore);
-        	}
-        }
+			}
+
+		} else {
+			for (String oneFile : directoryFiles) { // get each xml, evaluate it, and add it to the new archive
+				Genotype<T> geno = (Genotype<T>) Serialization.load(dir + File.pathSeparator + oneFile);
+				Score<T> evalScore = task.evaluateOne(geno);
+				comparedArchive.add(evalScore);
+			}
+		}
 
 		Float[] elite = ArrayUtils.toObject(comparedArchive.getEliteScores());
 		MMNEATLog compareLog = new MMNEATLog(binLabelOutName, false, false, false, true, false);
 		MMNEATLog lastLog = new MMNEATLog(binLabelLastName, false, false, false, true, false);
-		
+
 		int occupiedBins = elite.length - ArrayUtil.countOccurrences(Float.NEGATIVE_INFINITY, elite);
 		compareLog.log("Occupied Bins: " + occupiedBins);
-		compareLog.log("Occupied Bins Percent: " + (occupiedBins/((float) elite.length))*100 + "% ("+occupiedBins+"/"+elite.length+")");
-		compareLog.log("Surviving Bins Percent: " + (occupiedBins/((float) Integer.parseInt(oldEndValues[1])))*100 + "% ("+occupiedBins+"/"+Integer.parseInt(oldEndValues[1])+")");
+		compareLog.log("Occupied Bins Percent: " + (occupiedBins / ((float) elite.length)) * 100 + "% (" + occupiedBins
+				+ "/" + elite.length + ")");
+		compareLog.log("Surviving Bins Percent: " + (occupiedBins / ((float) Integer.parseInt(oldEndValues[1]))) * 100
+				+ "% (" + occupiedBins + "/" + Integer.parseInt(oldEndValues[1]) + ")");
 		compareLog.log("QD Score: " + MAPElites.calculateQDScore(elite));
-		compareLog.log("Maximum Fitness: " + StatisticsUtilities.maximum(elite));		
+		compareLog.log("Maximum Fitness: " + StatisticsUtilities.maximum(elite));
 		lastLog.log(oldEndValues[0] + "\t" + StringUtils.join(elite, "\t"));
 	}
 
@@ -135,20 +143,32 @@ public class CompareMAPElitesBinningSchemeExperiment<T> implements Experiment {
 	public boolean shouldStop() {
 		return true; // always
 	}
-	
-	
+
 	public static void main(String[] args) throws FileNotFoundException, NoSuchMethodException {
 		String base = "mariopdsl";
 		String logPrefix = "MarioPDSL";
 		String saveTo = "FullDirect2GAN";
 		String runNumber = "0";
 		String binningScheme = "edu.southwestern.tasks.mario.binningschemes.MarioMAPElitesPercentDecorateCoverageAndLeniencyBinLabels";
-		//MMNEAT.main(("runNumber:0 parallelEvaluations:false base:mariolevelsdecoratensleniency log:MarioLevelsDecorateNSLeniency-CPPNThenDirect2GAN saveTo:CPPNThenDirect2GAN trials:1 experiment:edu.southwestern.experiment.post.CompareMAPElitesBinningSchemeExperiment mapElitesBinLabels:edu.southwestern.tasks.mario.MarioMAPElitesDistinctChunksNSAndDecorationBinLabels").split(" "));
-		//MMNEAT.main(("runNumber:"+runNumber+" parallelEvaluations:true threads:20 base:"+base+" log:"+logPrefix+"-"+saveTo+" saveTo:"+saveTo+" trials:1 experiment:edu.southwestern.experiment.post.CompareMAPElitesBinningSchemeExperiment mapElitesBinLabels:"+binningScheme+" logLock:true io:false").split(" "));
-		MMNEAT.main(("runNumber:"+runNumber+" parallelEvaluations:true threads:20 base:"+base+" log:"+logPrefix+"-"+saveTo+" saveTo:"+saveTo+" trials:1 experiment:edu.southwestern.experiment.post.CompareMAPElitesBinningSchemeExperiment mapElitesBinLabels:"+binningScheme+" logLock:true io:false marioMinDecorationIndex:1 marioMaxDecorationIndex:5 marioMinLeniencyIndex:3 marioMaxLeniencyIndex:5 marioMinSpaceCoverageIndex:0 marioMaxSpaceCoverageIndex:8").split(" "));
+		// MMNEAT.main(("runNumber:0 parallelEvaluations:false
+		// base:mariolevelsdecoratensleniency
+		// log:MarioLevelsDecorateNSLeniency-CPPNThenDirect2GAN
+		// saveTo:CPPNThenDirect2GAN trials:1
+		// experiment:edu.southwestern.experiment.post.CompareMAPElitesBinningSchemeExperiment
+		// mapElitesBinLabels:edu.southwestern.tasks.mario.MarioMAPElitesDistinctChunksNSAndDecorationBinLabels").split("
+		// "));
+		// MMNEAT.main(("runNumber:"+runNumber+" parallelEvaluations:true threads:20
+		// base:"+base+" log:"+logPrefix+"-"+saveTo+" saveTo:"+saveTo+" trials:1
+		// experiment:edu.southwestern.experiment.post.CompareMAPElitesBinningSchemeExperiment
+		// mapElitesBinLabels:"+binningScheme+" logLock:true io:false").split(" "));
+		MMNEAT.main(("runNumber:" + runNumber + " parallelEvaluations:true threads:20 base:" + base + " log:"
+				+ logPrefix + "-" + saveTo + " saveTo:" + saveTo
+				+ " trials:1 experiment:edu.southwestern.experiment.post.CompareMAPElitesBinningSchemeExperiment mapElitesBinLabels:"
+				+ binningScheme
+				+ " logLock:true io:false marioMinDecorationIndex:1 marioMaxDecorationIndex:5 marioMinLeniencyIndex:3 marioMaxLeniencyIndex:5 marioMinSpaceCoverageIndex:0 marioMaxSpaceCoverageIndex:8")
+				.split(" "));
 	}
-	
-	
+
 	/**
 	 * Evaluation thread for multithreaded
 	 * file reading and evaluation.
@@ -177,8 +197,8 @@ public class CompareMAPElitesBinningSchemeExperiment<T> implements Experiment {
 		@SuppressWarnings("unchecked")
 		@Override
 		public Score<T> call() throws Exception {
-			Genotype<T> geno = (Genotype<T>) Serialization.load(dir+"\\"+fileName);
-    		Score<T> evalScore = task.evaluateOne(geno);
+			Genotype<T> geno = (Genotype<T>) Serialization.load(dir + File.pathSeparator + fileName);
+			Score<T> evalScore = task.evaluateOne(geno);
 			return evalScore;
 		}
 	}
