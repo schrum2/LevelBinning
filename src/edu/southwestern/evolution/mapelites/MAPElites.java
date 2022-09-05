@@ -436,7 +436,7 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 			double[] restrictedScores = stream.mapToDouble(s -> s.behaviorIndexScore()).toArray();
 			final int restrictedFilled = restrictedScores.length;
 			final double restrictedQD = calculateQDScore(ArrayUtil.doubleArrayToFloatArray(restrictedScores));
-			final double restrictedMaxFitness = StatisticsUtilities.maximum(restrictedScores);
+			final double restrictedMaxFitness = restrictedScores.length == 0 ? 0 : StatisticsUtilities.maximum(restrictedScores);
 			
 			fillLog.log(pseudoGeneration + "\t" + numFilledBins   + "\t" + qdScore    + "\t" + maximumFitness + "\t" + iterationsWithoutEliteCounter + 
 					                       "\t" + restrictedFilled+ "\t" +restrictedQD+ "\t" +restrictedMaxFitness);
