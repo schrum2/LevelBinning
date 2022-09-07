@@ -1,27 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project LevelBinning">
-    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
-    <!--ANT 1.7 is required                                        -->
+<project default="create_run_jar" name="Create Runnable Jar for Project LevelBinning with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR file Export Wizard-->
+    <!--ANT 1.7 is required-->
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="${dir.buildfile}"/>
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/MMNEAT.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${dir.jarfile}/MMNEAT.jar">
             <manifest>
-                <attribute name="Main-Class" value="edu.southwestern.MMNEAT.MMNEAT"/>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="edu.southwestern.MMNEAT.MMNEAT"/>
                 <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ AsciiPanel-ac179b1.jar commons-io-2.4.jar commons-lang-2.4.jar commons-lang3-3.8.jar ecj.jar gson-2.2.4.jar gson-2.6.2.jar jdom.jar vecmath-1.5.2.jar guava-18.0.jar"/>
             </manifest>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/AsciiPanel-ac179b1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/commons-io-2.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/commons-lang-2.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/commons-lang3-3.8.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/ecj.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/gson-2.2.4.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/gson-2.6.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/jdom.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/vecmath-1.5.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.jarfile}/lib/guava-18.0.jar"/>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="AsciiPanel-ac179b1.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="commons-io-2.4.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="commons-lang-2.4.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="commons-lang3-3.8.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="ecj.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="gson-2.2.4.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="gson-2.6.2.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="jdom.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="vecmath-1.5.2.jar"/>
+            <zipfileset dir="${dir.jarfile}/lib" includes="guava-18.0.jar"/>
             <fileset dir="${dir.jarfile}/bin"/>
         </jar>
     </target>
