@@ -11,9 +11,11 @@ import java.util.Scanner;
 import edu.southwestern.MMNEAT.MMNEAT;
 import edu.southwestern.evolution.mapelites.Archive;
 import edu.southwestern.evolution.mapelites.MAPElites;
+import edu.southwestern.parameters.CommonConstants;
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.scores.Score;
 import edu.southwestern.tasks.mario.MarioLevelTask;
+//import edu.southwestern.util.MiscUtil;
 import edu.southwestern.util.datastructures.ArrayUtil;
 
 /**
@@ -24,6 +26,11 @@ import edu.southwestern.util.datastructures.ArrayUtil;
  *
  */
 public class BinOriginalMarioLevels {
+	
+	// At one point, length of actual levels was adjusted to fit a certain
+	// number of segments.
+	public static boolean CHOP = false;
+	
 	/**
 	 * Loop through the original Mario levels and put them in each possible
 	 * MAP Elites archive.
@@ -55,12 +62,19 @@ public class BinOriginalMarioLevels {
 				//System.out.println(Arrays.deepToString(grid));
 				List<List<Integer>> levelAsLists = new ArrayList<>();
 				for(int[] row: grid) {
-					int numSegments = row.length / MarioLevelTask.SEGMENT_WIDTH_IN_BLOCKS; 
-					int choppedLength = numSegments * MarioLevelTask.SEGMENT_WIDTH_IN_BLOCKS;
-					System.out.println("Chop "+row.length+" down to "+choppedLength);
-					int[] chopped = new int[choppedLength];
-					System.arraycopy(row, 0, chopped, 0, choppedLength);
-					List<Integer> rowList = ArrayUtil.intListFromArray(chopped);
+					List<Integer> rowList;
+					if(CHOP) {
+						// remove section of level to fit a given number of segments
+						int numSegments = row.length / MarioLevelTask.SEGMENT_WIDTH_IN_BLOCKS; 
+						int choppedLength = numSegments * MarioLevelTask.SEGMENT_WIDTH_IN_BLOCKS;
+						System.out.println("Chop "+row.length+" down to "+choppedLength);
+						int[] chopped = new int[choppedLength];
+						System.arraycopy(row, 0, chopped, 0, choppedLength);
+						rowList = ArrayUtil.intListFromArray(chopped);
+					} else {
+						// copy level as is
+						rowList = ArrayUtil.intListFromArray(row);
+					}
 					System.out.println(rowList);
 					levelAsLists.add(rowList);
 				}
