@@ -278,6 +278,13 @@ public abstract class MarioLevelTask<T> extends NoisyLonerTask<T>  {
 		if(MMNEAT.usingDiversityBinningScheme || CommonConstants.watch) {
 			// View whole dungeon layout
 			levelImage = MarioLevelUtil.getLevelImage(level);
+			
+			// For debugging level image render
+//			DrawingPanel levelPanel = new DrawingPanel(levelImage.getWidth(),levelImage.getHeight(), "Level");
+//			levelPanel.getGraphics().drawImage(levelImage, 0, 0, null);
+//			System.out.println("Showing level");
+//			MiscUtil.waitForReadStringAndEnterKeyPress();
+			
 			if(segmentFitness) { // Draw lines dividing the segments 
 				Graphics2D g = (Graphics2D) levelImage.getGraphics();
 				g.setColor(Color.MAGENTA);
@@ -450,7 +457,7 @@ public abstract class MarioLevelTask<T> extends NoisyLonerTask<T>  {
 					g.setColor(Color.BLUE);
 					g.setStroke(new BasicStroke(4)); // Thicker line
 					for(MarioState s : mostRecentVisited) {
-						int x = s.marioX - LevelParser.BUFFER_WIDTH;
+						int x = s.marioX - MarioLevelUtil.bufferShift();
 						int y = s.marioY;
 						g.drawLine(x*PIXEL_BLOCK_WIDTH, y*PIXEL_BLOCK_WIDTH, (x+1)*PIXEL_BLOCK_WIDTH, (y+1)*PIXEL_BLOCK_WIDTH);
 						g.drawLine((x+1)*PIXEL_BLOCK_WIDTH, y*PIXEL_BLOCK_WIDTH, x*PIXEL_BLOCK_WIDTH, (y+1)*PIXEL_BLOCK_WIDTH);
@@ -460,7 +467,7 @@ public abstract class MarioLevelTask<T> extends NoisyLonerTask<T>  {
 						MarioState current = start;
 						g.setColor(Color.RED);
 						for(MarioAction a : actionSequence) {
-							int x = current.marioX - LevelParser.BUFFER_WIDTH;
+							int x = current.marioX - MarioLevelUtil.bufferShift();
 							int y = current.marioY;
 							g.drawLine(x*PIXEL_BLOCK_WIDTH, y*PIXEL_BLOCK_WIDTH, (x+1)*PIXEL_BLOCK_WIDTH, (y+1)*PIXEL_BLOCK_WIDTH);
 							g.drawLine((x+1)*PIXEL_BLOCK_WIDTH, y*PIXEL_BLOCK_WIDTH, x*PIXEL_BLOCK_WIDTH, (y+1)*PIXEL_BLOCK_WIDTH);

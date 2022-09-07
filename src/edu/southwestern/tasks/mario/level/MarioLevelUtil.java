@@ -340,6 +340,15 @@ public class MarioLevelUtil {
 
 	// Evaluated levels have buffers added to the start and end that later need to be removed
 	public static boolean removeMarioLevelBuffer = true;
+	
+	/**
+	 * Used for placing A* paths. Amount to shift the horizontal coordinates, based on whether a
+	 * buffer zone was added to the start of the level.
+	 * @return Size of buffer in blocks/tiles
+	 */
+	public static int bufferShift() {
+		return removeMarioLevelBuffer ? LevelParser.BUFFER_WIDTH : 0;
+	}
 
 	/**
 	 * Return an image of the level, excluding the buffer zones at the
@@ -358,7 +367,7 @@ public class MarioLevelUtil {
 		int relevantWidth = (level.width - (removeMarioLevelBuffer ? (2*OldLevelParser.BUFFER_WIDTH) : 0)) * MarioLevelUtil.BLOCK_SIZE;
 		BufferedImage image = new BufferedImage(relevantWidth, (1+level.height)*MarioLevelUtil.BLOCK_SIZE, BufferedImage.TYPE_INT_ARGB);
 		// Skips buffer zones at start and end of level
-		LevelRenderer.renderArea((Graphics2D) image.getGraphics(), level, 0, 0, OldLevelParser.BUFFER_WIDTH*BLOCK_SIZE, 0, relevantWidth, (1+level.height)*BLOCK_SIZE);
+		LevelRenderer.renderArea((Graphics2D) image.getGraphics(), level, 0, 0, removeMarioLevelBuffer ? OldLevelParser.BUFFER_WIDTH*BLOCK_SIZE : 0, 0, relevantWidth, (1+level.height)*BLOCK_SIZE);
 		return image;
 	}
 

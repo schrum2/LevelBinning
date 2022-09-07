@@ -128,7 +128,7 @@ public class LevelParser {
     //////////////////////// -- End of code from Settings.java
 	
     
-    public static final int BUFFER_WIDTH = 15; // This is the extra space added at the start and ends of levels
+    public static final int BUFFER_WIDTH = OldLevelParser.BUFFER_WIDTH; // 15; // This is the extra space added at the start and ends of levels
     public LevelParser(){
         
     }    

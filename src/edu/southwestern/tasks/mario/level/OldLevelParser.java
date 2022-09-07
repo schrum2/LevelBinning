@@ -1,17 +1,17 @@
 package edu.southwestern.tasks.mario.level;
 
-import ch.idsia.mario.engine.level.Level;
-import ch.idsia.mario.engine.level.SpriteTemplate;
-import ch.idsia.mario.engine.sprites.Enemy;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+
+import ch.idsia.mario.engine.level.Level;
+import ch.idsia.mario.engine.level.SpriteTemplate;
+import ch.idsia.mario.engine.sprites.Enemy;
 
 /**
  * This level parser is used by the original version of Mario GAN presented in our GECCO 2018
