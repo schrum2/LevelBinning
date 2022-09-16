@@ -48,3 +48,6 @@ To build the ant script with a specific version of java specified by jenv, enabl
 ```
 >$jenv enable-plugin ant
 ```
+
+#### Note for HPC:
+Ant may not be installed. It is needed to compile the JAR. 
