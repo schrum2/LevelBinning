@@ -353,11 +353,6 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 		});
 		CommonConstants.netio = backupNetIO;		
 		
-		if(Parameters.parameters.booleanParameter("turnOffRestrictionsDuringInit")) {
-			System.out.println("Return to discarding elites in restricted range");
-			Parameters.parameters.setBoolean("discardFromBinOutsideRestrictedRange", originalSetting);
-		}
-		
 		// Special code if image auto-encoder is used
 //		if(Parameters.parameters.booleanParameter("trainInitialAutoEncoder") && saveImageArchives && Parameters.parameters.booleanParameter("trainingAutoEncoder")) {
 //			System.out.println("Train initial auto-encoder");
@@ -412,7 +407,13 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 			});
 			//long endTime = System.currentTimeMillis();
 			//System.out.println("TIME TAKEN:" + (endTime - startTime));
+			
 //		}
+				
+		if(Parameters.parameters.booleanParameter("turnOffRestrictionsDuringInit")) {
+			System.out.println("Return to discarding elites in restricted range");
+			Parameters.parameters.setBoolean("discardFromBinOutsideRestrictedRange", originalSetting);
+		}
 	}
 
 	/**
