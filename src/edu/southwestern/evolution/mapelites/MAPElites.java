@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Vector;
 import java.util.stream.Stream;
 
@@ -29,7 +28,6 @@ import edu.southwestern.util.PopulationUtil;
 import edu.southwestern.util.PythonUtil;
 import edu.southwestern.util.datastructures.ArrayUtil;
 import edu.southwestern.util.file.FileUtilities;
-import edu.southwestern.util.file.Serialization;
 import edu.southwestern.util.random.RandomNumbers;
 import edu.southwestern.util.stats.StatisticsUtilities;
 
@@ -310,22 +308,29 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 		}	
 		
 		if(iterations > 0) {
-			startingPopulation = new ArrayList<>();
-			//int numLabels = archive.getBinMapping().binLabels().size();
-			// Loading from saved archive
-			String archiveDir = archive.getArchiveDirectory();
-			List<String> binLabels = archive.getBinMapping().binLabels();
-			Serialization.debug = false; // Don't print stack trace for missing files
-			// Load each elite from xml file into archive
-			for(int i = 0; i < binLabels.size(); i++) {
-				String binPrefix = archiveDir + "/" + binLabels.get(i) + "-";
-				Genotype<T> elite = (Genotype<T>) Serialization.load(binPrefix + "elite"); // Load genotype
-				//double binScore = Double.NEGATIVE_INFINITY; // The one bin score
-				if(elite != null) { // File actually exists
-					startingPopulation.add(elite);
-				}
-			}
-			Serialization.debug = true; // Restore stack traces
+			
+			System.out.println("It is not safe to resume MAP-Elites runs that crash.");
+			System.out.println("Because logging is periodic, the state of the archive may not reflect the state of the logs.");
+			System.exit(1);
+			
+			startingPopulation = null;
+			
+//			startingPopulation = new ArrayList<>();
+//			//int numLabels = archive.getBinMapping().binLabels().size();
+//			// Loading from saved archive
+//			String archiveDir = archive.getArchiveDirectory();
+//			List<String> binLabels = archive.getBinMapping().binLabels();
+//			Serialization.debug = false; // Don't print stack trace for missing files
+//			// Load each elite from xml file into archive
+//			for(int i = 0; i < binLabels.size(); i++) {
+//				String binPrefix = archiveDir + "/" + binLabels.get(i) + "-";
+//				Genotype<T> elite = (Genotype<T>) Serialization.load(binPrefix + "elite"); // Load genotype
+//				//double binScore = Double.NEGATIVE_INFINITY; // The one bin score
+//				if(elite != null) { // File actually exists
+//					startingPopulation.add(elite);
+//				}
+//			}
+//			Serialization.debug = true; // Restore stack traces
 		} else {
 			System.out.println("Fill up initial archive");		
 			// Start from scratch
