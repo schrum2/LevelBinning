@@ -16,6 +16,11 @@ import org.apache.commons.lang.ArrayUtils;
  */
 public class ArrayUtil {
 
+	/**
+	 * Convert array of primitive doubles to array of object Floats
+	 * @param input double array
+	 * @return Float array
+	 */
 	public static Float[] doubleArrayToFloatArray(double[] input) {
 		Float[] result = new Float[input.length];
 		for(int i = 0; i < result.length; i++) {
