@@ -227,9 +227,11 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 		String[] dimensionNames = bins.dimensions();
 		int[] dimensionSizes = bins.dimensionSizes();
 		String archiveBatchName = directory + "GenerateArchiveImage.bat";
+		String restrictedArchiveBatchName = directory + "GenerateRestrictedArchiveImage.bat";
 		String archiveAnimationBatchName = directory + "GenerateArchiveAnimation.bat";
 		
 		if (dimensionNames.length == 3 || dimensionNames.length == 2) {
+			PrintStream restricted = new PrintStream(new File(restrictedArchiveBatchName));
 			PrintStream ps = new PrintStream(new File(archiveBatchName));
 			if (dimensionNames.length == 3) { // add min/max batch params
 				ps.println("REM python 3DMAPElitesArchivePlotter.py <plot file to display> <first dimension name> <first dimension size> <second dimension name> <second dimension size> <third dimension name> <third dimension size> <row amount> <max value> <min value>\r\n"
@@ -238,19 +240,12 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 				ps.println("REM python 2DMAPElitesArchivePlotter.py <plot file to display> <first dimension name> <first dimension size> <second dimension name> <second dimension size> <max value> <min value>\r\n"
 						+ "REM The min and max values are not required, and instead will be calculated automatically");
 			}
-			ps.println("cd ..");
-			ps.println("cd ..");
-			ps.print(PythonUtil.PYTHON_EXECUTABLE + " "+dimensionNames.length+"DMAPElitesArchivePlotter.py "+directory+fullName.substring(fullName.lastIndexOf('/')+1, fullName.lastIndexOf('.')) + ".txt");
-			ps.print(" \""+prefix+"\"");
-			for (int i = 0; i < dimensionNames.length; i++) {
-				ps.print(" \""+dimensionNames[i]+"\" "+dimensionSizes[i]);
-			}
-			if (dimensionNames.length == 3) { // add min/max batch params
-				ps.print(" 2"); // add row param if 3
-			} 
-			// add min/max batch params and bounds for binning red box (designed for 3D. Excess parameters for 2D)
-			ps.print(" %1 %2 %3 %4 %5 %6 %7 %8");
+			// Print file that puts bounds around all archive points
+			writeScriptLauncher(directory, prefix, fullName, dimensionNames, dimensionSizes, ps, " %1 %2 %3 %4 %5 %6 %7 %8");
+			// Print file that puts bounds around restricted range
+			writeScriptLauncher(directory, prefix, fullName, dimensionNames, dimensionSizes, restricted, " max min "+bins.lowerRestrictedBounds()+" "+bins.upperRestrictedBounds()+" Restricted");
 			
+			restricted.close();
 			ps.close();
 			
 			ps = new PrintStream(new File(archiveAnimationBatchName));
@@ -276,6 +271,22 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 			ps.close();
 		}
 	}
+
+	private void writeScriptLauncher(String directory, String prefix, String fullName, String[] dimensionNames,
+			int[] dimensionSizes, PrintStream ps, String finalLine) {
+		ps.println("cd ..");
+		ps.println("cd ..");
+		ps.print(PythonUtil.PYTHON_EXECUTABLE + " "+dimensionNames.length+"DMAPElitesArchivePlotter.py "+directory+fullName.substring(fullName.lastIndexOf('/')+1, fullName.lastIndexOf('.')) + ".txt");
+		ps.print(" \""+prefix+"\"");
+		for (int i = 0; i < dimensionNames.length; i++) {
+			ps.print(" \""+dimensionNames[i]+"\" "+dimensionSizes[i]);
+		}
+		if (dimensionNames.length == 3) { // add min/max batch params
+			ps.print(" 2"); // add row param if 3
+		} 
+		// add min/max batch params and bounds for binning red box (designed for 3D. Excess parameters for 2D)
+		ps.print(finalLine);
+	}
 	
 	/**
 	 * Get the archive
@@ -290,7 +301,6 @@ public class MAPElites<T> implements SteadyStateEA<T> {
 	 * according to where they best fit.
 	 * @param example Starting genotype used to derive new instances
 	 */
-	@SuppressWarnings({ "unchecked" })
 	@Override
 	public void initialize(Genotype<T> example) {	
 		if (this instanceof CMAME && MMNEAT.genotype instanceof RealValuedGenotype) {

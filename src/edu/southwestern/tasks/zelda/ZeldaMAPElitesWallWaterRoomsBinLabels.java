@@ -19,6 +19,20 @@ import edu.southwestern.tasks.gvgai.zelda.level.ZeldaLevelUtil;
 public class ZeldaMAPElitesWallWaterRoomsBinLabels extends BaseBinLabels {
 
 	@Override
+	public String lowerRestrictedBounds() {
+		return  Parameters.parameters.integerParameter("zeldaMinWallIndex")+" "+
+				Parameters.parameters.integerParameter("zeldaMinWaterIndex")+" "+
+				Parameters.parameters.integerParameter("zeldaMinReachableRooms");
+	}
+	
+	@Override
+	public String upperRestrictedBounds() {
+		return  Parameters.parameters.integerParameter("zeldaMaxWallIndex")+" "+
+				Parameters.parameters.integerParameter("zeldaMaxWaterIndex")+" "+
+				Parameters.parameters.integerParameter("zeldaMaxReachableRooms");
+	}	
+	
+	@Override
 	public boolean discard(HashMap<String, Object> behaviorMap) {
 		if(!Parameters.parameters.booleanParameter("discardFromBinOutsideRestrictedRange")) return false;
 		
