@@ -23,6 +23,7 @@ if __name__ == "__main__":
     if n != 4:
         print("Specify a root experiment directory and log file prefix and suffix, as in: ")
         print("python plotAverages.py mariopdsl MarioPDSL- _Fill_log.txt")
+        print("python plotAverages.py zeldadungeonswallwaterrooms ZeldaDungeonsWallWaterRooms- _Fill_log.txt")
         exit(1)
 
     global titles
