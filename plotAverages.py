@@ -114,6 +114,9 @@ if __name__ == "__main__":
     #df.plot.line()
     #plt.show()
 
+
+    # TODO: Figure out Standard Dev and Std Err so we can plot error bars
+
     # Plot each possible average
     for i in range(1,8):
         plot_column(avg_data, i) 
