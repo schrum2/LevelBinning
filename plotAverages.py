@@ -9,7 +9,7 @@ def plot_column(avg_data, col):
     # Restricted counts
     df = pandas.DataFrame({
     'FullDirect2GAN': avg_data["FullDirect2GAN"][col],
-    'RestrictedDirect2GAN': avg_data["RestrictedDirect2GAN"][col]
+    'RestrictDirect2GAN': avg_data["RestrictDirect2GAN"][col]
     }, index=avg_data["FullDirect2GAN"][0])
     df.plot.line()
     plt.title(titles[col])
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     log_prefix = sys.argv[2]
     log_suffix = sys.argv[3]
     entries = os.listdir(directory)
-    # For example: FullDirect2GAN0, FullDirect2GAN1, ..., FullDirect2GAN9, RestrictedDirect2GAN0, RestrictedDirect2GAN1, ..., RestrictedDirect2GAN9
+    # For example: FullDirect2GAN0, FullDirect2GAN1, ..., FullDirect2GAN9, RestrictDirect2GAN0, RestrictDirect2GAN1, ..., RestrictDirect2GAN9
 
     all_data = dict()
     prefixes = set()
@@ -109,8 +109,8 @@ if __name__ == "__main__":
     # Restricted counts
     #df = pandas.DataFrame({
     #'FullDirect2GAN-Full': avg_data["FullDirect2GAN"][3],
-    #'FullDirect2GAN-Restricted': avg_data["FullDirect2GAN"][7],
-    #'RestrictedDirect2GAN': avg_data["RestrictedDirect2GAN"][3]
+    #'FullDirect2GAN-Restrict': avg_data["FullDirect2GAN"][7],
+    #'RestrictDirect2GAN': avg_data["RestrictDirect2GAN"][3]
     #}, index=avg_data["FullDirect2GAN"][0])
     #df.plot.line()
     #plt.show()
