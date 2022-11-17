@@ -4,7 +4,7 @@ import pandas
 from functools import reduce
 import matplotlib.pyplot as plt
 
-def plot_column(avg_data, col):
+def plot_column(log_prefix,avg_data, col):
     global titles
     # Restricted counts
     df = pandas.DataFrame({
@@ -13,6 +13,7 @@ def plot_column(avg_data, col):
     }, index=avg_data["FullDirect2GAN"][0])
     df.plot.line()
     plt.title(titles[col])
+    plt.savefig("{}{}.png".format(log_prefix,titles[col].replace(" ","_")))
     plt.show()
 
 if __name__ == "__main__":
@@ -120,5 +121,5 @@ if __name__ == "__main__":
 
     # Plot each possible average
     for i in range(1,8):
-        plot_column(avg_data, i) 
+        plot_column(log_prefix, avg_data, i) 
     
