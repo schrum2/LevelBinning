@@ -59,4 +59,38 @@ public class LodeRunnerMAPElitesPercentGroundNumGoldAndEnemiesBinLabels extends 
 		int enemyIndex = (int) Math.min(numEnemies/enemyScale, BINS_PER_DIMENSION-1);
 		return new int[] {groundIndex, treasureIndex, enemyIndex}; // ground percentage, number of treasures scaled, number of enemies scaled
 	}
+	
+	// TODO: The methods below are copies of what are in BaseBinLabels, so no change in behavior yet.
+	//       However, if I fill these out I can evolve with a restricted range in Lode Runner.
+	
+	@Override
+	public boolean discard(HashMap<String, Object> behaviorMap) {
+		// By default do not discard anything, but bin representations can be more efficient if
+		// irrelevant bins are not stored.
+		return false;
+	}
+	
+	@Override
+	public boolean isOutsideRestrictedRange(int[] multi) {
+		// By default, there is no restricted range
+		return false;
+	}
+	
+	/**
+	 * Assume no restricted bounds exist, but this can be overridden
+	 * @return String listing the restricted lower bounds in each dimension, separated by spaces
+	 */
+	@Override
+	public String lowerRestrictedBounds() {
+		return "";
+	}
+	
+	/**
+	 * Assume no restricted bounds exist, but this can be overridden
+	 * @return String listing the restricted upper bounds in each dimension, separated by spaces
+	 */
+	@Override
+	public String upperRestrictedBounds() {
+		return "";
+	}
 }
