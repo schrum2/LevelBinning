@@ -5,8 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.southwestern.evolution.mapelites.BaseBinLabels;
+import edu.southwestern.parameters.Parameters;
 
 public class LodeRunnerMAPElitesPercentGroundNumGoldAndEnemiesBinLabels extends BaseBinLabels {
+	
+	public static final int INDEX_GROUND_PERCENT = 0;
+	public static final int INDEX_TREASURES = 1;
+	public static final int INDEX_ENEMIES = 2;
+	
+	
 	List<String> labels = null;
 	public static final int BINS_PER_DIMENSION = 10; //[0%-10%][10%-20%].....[90%-100%]
 	public static final int SCALE_BY_FIVE = 5; //makes groups of 5
@@ -65,15 +72,24 @@ public class LodeRunnerMAPElitesPercentGroundNumGoldAndEnemiesBinLabels extends 
 	
 	@Override
 	public boolean discard(HashMap<String, Object> behaviorMap) {
-		// By default do not discard anything, but bin representations can be more efficient if
-		// irrelevant bins are not stored.
-		return false;
+		if(!Parameters.parameters.booleanParameter("discardFromBinOutsideRestrictedRange")) return false;
+		
+		int[] multi = multiDimensionalIndices(behaviorMap);
+		// Allow for discarding of solutions outside of a restricted range set at the command line
+		boolean result = isOutsideRestrictedRange(multi);
+		return result;
 	}
 	
 	@Override
 	public boolean isOutsideRestrictedRange(int[] multi) {
-		// By default, there is no restricted range
-		return false;
+		boolean result =
+				   multi[INDEX_GROUND_PERCENT] < Parameters.parameters.integerParameter("lodeRunnerMinGroundPercentIndex") ||
+				   multi[INDEX_GROUND_PERCENT] > Parameters.parameters.integerParameter("lodeRunnerMaxGroundPercentIndex") ||
+				   multi[INDEX_TREASURES] < Parameters.parameters.integerParameter("lodeRunnerMinTreasuresIndex") ||
+				   multi[INDEX_TREASURES] > Parameters.parameters.integerParameter("lodeRunnerMaxTreasuresIndex") ||
+				   multi[INDEX_ENEMIES] < Parameters.parameters.integerParameter("lodeRunnerMinEnemiesIndex") ||
+				   multi[INDEX_ENEMIES] > Parameters.parameters.integerParameter("lodeRunnerMaxEnemiesIndex");
+		return result;
 	}
 	
 	/**

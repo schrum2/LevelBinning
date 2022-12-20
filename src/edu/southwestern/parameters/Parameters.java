@@ -350,6 +350,12 @@ public class Parameters {
 		integerOptions.add("minecraftClearDimension", 200, "The coordinates to clear the space for the archive");
 		integerOptions.add("minecraftClearSleepTimer", 200, "How long the thread should sleep between sending a clear command to python");
 		integerOptions.add("minecraftNumberOfBinsForMovement", 3,"The amount of bins for each side of the flying machine movement");
+		integerOptions.add("lodeRunnerMinGroundPercentIndex", 0, "Lowest interval index for MAP Elites dimension associated with Lode Runner ground percentage");
+		integerOptions.add("lodeRunnerMaxGroundPercentIndex", 10000, "Highest interval index for MAP Elites dimension associated with Lode Runner ground percentage");
+		integerOptions.add("lodeRunnerMinTreasuresIndex", 0, "Lowest interval index for MAP Elites dimension associated with Lode Runner treasures");
+		integerOptions.add("lodeRunnerMaxTreasuresIndex", 10000, "Highest interval index for MAP Elites dimension associated with Lode Runner treasures");
+		integerOptions.add("lodeRunnerMinEnemiesIndex", 0, "Lowest interval index for MAP Elites dimension associated with Lode Runner enemies");
+		integerOptions.add("lodeRunnerMaxEnemiesIndex", 10000, "Highest interval index for MAP Elites dimension associated with Lode Runner enemies");
 		integerOptions.add("marioMinDecorationIndex", 0, "Lowest interval index for MAP Elites dimension associated with Mario level decoration");
 		integerOptions.add("marioMaxDecorationIndex", 10000, "Highest interval index for MAP Elites dimension associated with Mario level decoration");
 		integerOptions.add("marioMinLeniencyIndex", 0, "Lowest interval index for MAP Elites dimension associated with Mario level leniency");
