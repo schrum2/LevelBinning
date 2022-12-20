@@ -39,6 +39,7 @@ import edu.southwestern.tasks.MultiplePopulationTask;
 import edu.southwestern.tasks.Task;
 import edu.southwestern.tasks.gvgai.zelda.dungeon.BinOriginalZeldaDungeons;
 import edu.southwestern.tasks.gvgai.zelda.study.HumanSubjectStudy2019Zelda;
+import edu.southwestern.tasks.loderunner.BinOriginalLodeRunnerLevels;
 import edu.southwestern.tasks.mario.gan.GANProcess;
 import edu.southwestern.tasks.mario.level.BinOriginalMarioLevels;
 import edu.southwestern.util.ClassCreation;
@@ -607,6 +608,14 @@ public class MMNEAT {
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("Error while running BinOriginalZeldaDungeons");
+				System.exit(1);
+			}
+		} else if(args[0].equals("binLodeRunner")){
+			try {
+				BinOriginalLodeRunnerLevels.main(new String[0]);
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Error while running BinOriginalLodeRunnerLevels");
 				System.exit(1);
 			}
 		} else {
