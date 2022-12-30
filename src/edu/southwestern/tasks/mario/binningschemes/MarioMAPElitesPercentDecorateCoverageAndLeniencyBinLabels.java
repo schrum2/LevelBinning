@@ -116,4 +116,18 @@ public class MarioMAPElitesPercentDecorateCoverageAndLeniencyBinLabels extends B
 			   multi[LevelParser.LEVEL_STATS_SPACE_COVERAGE_INDEX] > Parameters.parameters.integerParameter("marioMaxSpaceCoverageIndex");
 		return result;
 	}
+	
+	@Override
+	public String lowerRestrictedBounds() {
+		return  Parameters.parameters.integerParameter("marioMinDecorationIndex")+" "+
+				Parameters.parameters.integerParameter("marioMinLeniencyIndex")+" "+
+				Parameters.parameters.integerParameter("marioMinSpaceCoverageIndex");
+	}
+	
+	@Override
+	public String upperRestrictedBounds() {
+		return  Parameters.parameters.integerParameter("marioMaxDecorationIndex")+" "+
+				Parameters.parameters.integerParameter("marioMaxLeniencyIndex")+" "+
+				Parameters.parameters.integerParameter("marioMaxSpaceCoverageIndex");
+	}
 }

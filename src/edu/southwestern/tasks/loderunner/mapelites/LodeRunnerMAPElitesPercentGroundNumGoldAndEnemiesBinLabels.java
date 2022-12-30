@@ -92,21 +92,17 @@ public class LodeRunnerMAPElitesPercentGroundNumGoldAndEnemiesBinLabels extends 
 		return result;
 	}
 	
-	/**
-	 * Assume no restricted bounds exist, but this can be overridden
-	 * @return String listing the restricted lower bounds in each dimension, separated by spaces
-	 */
 	@Override
 	public String lowerRestrictedBounds() {
-		return "";
+		return  Parameters.parameters.integerParameter("lodeRunnerMinGroundPercentIndex")+" "+
+				Parameters.parameters.integerParameter("lodeRunnerMinTreasuresIndex")+" "+
+				Parameters.parameters.integerParameter("lodeRunnerMinEnemiesIndex");
 	}
 	
-	/**
-	 * Assume no restricted bounds exist, but this can be overridden
-	 * @return String listing the restricted upper bounds in each dimension, separated by spaces
-	 */
 	@Override
 	public String upperRestrictedBounds() {
-		return "";
+		return  Parameters.parameters.integerParameter("lodeRunnerMaxGroundPercentIndex")+" "+
+				Parameters.parameters.integerParameter("lodeRunnerMaxTreasuresIndex")+" "+
+				Parameters.parameters.integerParameter("lodeRunnerMaxEnemiesIndex");
 	}
 }
