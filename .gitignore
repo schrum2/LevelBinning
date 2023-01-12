@@ -33,3 +33,4 @@ python/GAN/models/__pycache__/cdcgan.cpython-38.pyc
 my_python_path.txt
 
 loderunnergte/
+*.png
