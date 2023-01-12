@@ -307,6 +307,9 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction>{
 //		//creates a buffered image from the level to be displayed 
 //		BufferedImage visualPath = LodeRunnerRenderUtil.createBufferedImage(fullLevel, LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X, 
 //				LodeRunnerRenderUtil.LODE_RUNNER_ROWS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, images);
+		
+		// TODO: Make a method like this one that uses the loop below, but creates an animated gif showing the agent solve the level instead of marking with X
+				
 		if(mostRecentVisited != null) {
 			Graphics2D g = (Graphics2D) visualPath.getGraphics();
 			if(Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
