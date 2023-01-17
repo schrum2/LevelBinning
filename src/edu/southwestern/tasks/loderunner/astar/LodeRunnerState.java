@@ -3,20 +3,12 @@ package edu.southwestern.tasks.loderunner.astar;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import edu.southwestern.parameters.Parameters;
 import edu.southwestern.tasks.loderunner.LodeRunnerRenderUtil;
@@ -187,7 +179,9 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction> {
 		// System.out.println("actionSequence length: " + actionSequence.size());
 		try {
 			// visualizes the points visited with blue and whit x's
-			vizualizePathAnimation(level, mostRecentVisited, actionSequence, start, "Test.gif");
+			BufferedImage[] images = vizualizePathAnimation(level, mostRecentVisited, actionSequence, start);
+			AnimationUtil.createGif(images, 3, "Test.gif");
+
 			System.out.println("DONE!");
 //			try { // displays window with the rendered level and the solution path/visited states
 //				JFrame frame = new JFrame();
@@ -404,17 +398,17 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction> {
 	}
 	
 	/**
-	 * Make an animated gif of traversing the solution path. Save file to disk
+	 * Return image sequence for an animation of solving the level
 	 * 
 	 * @param level Lode Runner level
 	 * @param mostRecentVisited set of visited states
 	 * @param actionSequence list of actions taken in order
 	 * @param start starting state
-	 * @param gifFile gif file to save
+	 * @return sequence of images in animation within an array
 	 * @throws IOException
 	 */
-	public static void vizualizePathAnimation(List<List<Integer>> level, HashSet<LodeRunnerState> mostRecentVisited,
-			ArrayList<LodeRunnerAction> actionSequence, LodeRunnerState start, String gifFile) throws IOException {
+	public static BufferedImage[] vizualizePathAnimation(List<List<Integer>> level, HashSet<LodeRunnerState> mostRecentVisited,
+			ArrayList<LodeRunnerAction> actionSequence, LodeRunnerState start) throws IOException {
 		List<List<Integer>> fullLevel = ListUtil.deepCopyListOfLists(level); // copies level to draw solution path over it
 		fullLevel.get(start.currentY).set(start.currentX, LODE_RUNNER_TILE_SPAWN);// puts the spawn back into the visualization
 		for (Point p : start.goldLeft) { // puts all the gold back
@@ -447,9 +441,10 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction> {
 		GetImage ga = new GetImage();
 
 		BufferedImage visualPath = ga.run(fullLevel);
+		BufferedImage[] gifImages = new BufferedImage[actionSequence != null ? actionSequence.size() + 1 : 1];
+		gifImages[0] = visualPath;
+
 		if (actionSequence != null) {
-			BufferedImage[] gifImages = new BufferedImage[actionSequence.size() + 1];
-			gifImages[0] = visualPath;
 
 			LodeRunnerState current = start;
 			int prevTile = fullLevel.get(start.currentY).get(start.currentX);
@@ -472,8 +467,8 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction> {
 				current = (LodeRunnerState) current.getSuccessor(a);
 			}
 			
-			AnimationUtil.createGif(gifImages, 3, gifFile);
 		}
+		return gifImages;
 
 	}
 

@@ -35,6 +35,7 @@ import edu.southwestern.util.datastructures.ArrayUtil;
 import edu.southwestern.util.datastructures.Pair;
 import edu.southwestern.util.datastructures.Triple;
 import edu.southwestern.util.file.FileUtilities;
+import edu.southwestern.util.graphics.AnimationUtil;
 import edu.southwestern.util.graphics.GraphicsUtil;
 import icecreamyou.LodeRunner.LodeRunner;
 
@@ -300,6 +301,11 @@ public abstract class LodeRunnerLevelTask<T> extends NoisyLonerTask<T> {
 			try {
 				//displays the rendered solution path in a window 
 				BufferedImage visualPath = LodeRunnerState.vizualizePath(level,mostRecentVisited,actionSequence,start);
+				
+				// NOT SURE THESE NEXT TWO LINES WORK
+				BufferedImage[] animation = LodeRunnerState.vizualizePathAnimation(level,mostRecentVisited,actionSequence,start);
+				AnimationUtil.createGif(animation, 3, "LodeRunner.gif");
+				
 				JFrame frame = new JFrame();
 				JPanel panel = new JPanel();
 				JLabel label = new JLabel(new ImageIcon(visualPath.getScaledInstance(LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X, 
@@ -362,16 +368,18 @@ public abstract class LodeRunnerLevelTask<T> extends NoisyLonerTask<T> {
 
 			BufferedImage levelSolution = null;
 			BufferedImage levelImage = null;
+			BufferedImage[] animationImages = null;
 			try {
 				//gets images of the level, both a standard render and the solution path 
 				levelSolution = LodeRunnerState.vizualizePath(level,mostRecentVisited,actionSequence,start);
+				animationImages = LodeRunnerState.vizualizePathAnimation(level,mostRecentVisited,actionSequence,start);
 				levelImage = LodeRunnerRenderUtil.createBufferedImage(level, LodeRunnerRenderUtil.RENDERED_IMAGE_WIDTH, LodeRunnerRenderUtil.RENDERED_IMAGE_HEIGHT);
 			} catch (IOException e) {
 				//e.printStackTrace();
 				System.out.println("Could not get image");
 			} 
 			//this method saves the level images in the archive directory 
-			setBinsAndSaveLevelImages(genotypeId, levelImage, levelSolution, dim1D, binScore);
+			setBinsAndSaveLevelImages(genotypeId, levelImage, levelSolution, animationImages, dim1D, binScore);
 		}
 
 
@@ -386,7 +394,7 @@ public abstract class LodeRunnerLevelTask<T> extends NoisyLonerTask<T> {
 	 * @param dim1D 1D index of new solution within archive
 	 * @param binScore AStarPath length 
 	 */
-	private void setBinsAndSaveLevelImages(long genotypeId, BufferedImage levelImage, BufferedImage levelSolution, int dim1D, double binScore) {		
+	private void setBinsAndSaveLevelImages(long genotypeId, BufferedImage levelImage, BufferedImage levelSolution, BufferedImage[] animationImages, int dim1D, double binScore) {		
 		//saving images in bins 
 		if(CommonConstants.netio) {
 			System.out.println("Saving rendered level and solution path for level");
@@ -409,6 +417,13 @@ public abstract class LodeRunnerLevelTask<T> extends NoisyLonerTask<T> {
 					String fullNameSolution = binPath + "_" +fileNameSolution;
 					System.out.println(fullNameSolution);
 					GraphicsUtil.saveImage(levelSolution, fullNameSolution);// saves the rendered level with the solution path
+					
+					try {
+						AnimationUtil.createGif(animationImages, 3, fullNameSolution.replace(".png", ".gif"));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
