@@ -24,6 +24,7 @@ import edu.southwestern.tasks.loderunner.LodeRunnerVGLCUtil;
 import edu.southwestern.util.MiscUtil;
 //import edu.southwestern.util.MiscUtil;
 import edu.southwestern.util.datastructures.ListUtil;
+import edu.southwestern.util.graphics.AnimationUtil;
 import edu.southwestern.util.search.AStarSearch;
 import edu.southwestern.util.search.Action;
 import edu.southwestern.util.search.Heuristic;
@@ -186,21 +187,22 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction> {
 		// System.out.println("actionSequence length: " + actionSequence.size());
 		try {
 			// visualizes the points visited with blue and whit x's
-			BufferedImage visualPath = vizualizePath(level, mostRecentVisited, actionSequence, start);
-			try { // displays window with the rendered level and the solution path/visited states
-				JFrame frame = new JFrame();
-				JPanel panel = new JPanel();
-				JLabel label = new JLabel(new ImageIcon(visualPath.getScaledInstance(
-						LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-						LodeRunnerRenderUtil.LODE_RUNNER_ROWS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
-						Image.SCALE_FAST)));
-				panel.add(label);
-				frame.add(panel);
-				frame.pack();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			vizualizePathAnimation(level, mostRecentVisited, actionSequence, start, "Test.gif");
+			System.out.println("DONE!");
+//			try { // displays window with the rendered level and the solution path/visited states
+//				JFrame frame = new JFrame();
+//				JPanel panel = new JPanel();
+//				JLabel label = new JLabel(new ImageIcon(visualPath.getScaledInstance(
+//						LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
+//						LodeRunnerRenderUtil.LODE_RUNNER_ROWS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
+//						Image.SCALE_FAST)));
+//				panel.add(label);
+//				frame.add(panel);
+//				frame.pack();
+//				frame.setVisible(true);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -333,149 +335,146 @@ public class LodeRunnerState extends State<LodeRunnerState.LodeRunnerAction> {
 	 * @param start             Start state
 	 * @throws IOException
 	 */
-	public static BufferedImage vizualizePath(List<List<Integer>> level, HashSet<LodeRunnerState> mostRecentVisited,
+	public static BufferedImage vizualizePath(List<List<Integer>> level, HashSet<LodeRunnerState> mostRecentVisited, 
 			ArrayList<LodeRunnerAction> actionSequence, LodeRunnerState start) throws IOException {
-		List<List<Integer>> fullLevel = ListUtil.deepCopyListOfLists(level); // copies level to draw solution path over
-																				// it
-		fullLevel.get(start.currentY).set(start.currentX, LODE_RUNNER_TILE_SPAWN);// puts the spawn back into the
-																					// visualization
-		for (Point p : start.goldLeft) { // puts all the gold back
+		List<List<Integer>> fullLevel = ListUtil.deepCopyListOfLists(level); //copies level to draw solution path over it 
+		fullLevel.get(start.currentY).set(start.currentX, LODE_RUNNER_TILE_SPAWN);// puts the spawn back into the visualization
+		for(Point p : start.goldLeft) { //puts all the gold back 
 			fullLevel.get(p.y).set(p.x, LODE_RUNNER_TILE_GOLD);
 		}
 		BufferedImage[] images;
 		BufferedImage visualPath;
-		if (Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
-			images = LodeRunnerRenderUtil.loadIceCreamYouTiles(LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_PATH); // Initializes
-																												// the
-																												// array
-																												// that
-																												// hold
-																												// the
-																												// tile
-																												// images
-			visualPath = LodeRunnerRenderUtil.createIceCreamYouImage(fullLevel,
-					LodeRunnerRenderUtil.ICE_CREAM_YOU_IMAGE_WIDTH, LodeRunnerRenderUtil.ICE_CREAM_YOU_IMAGE_HEIGHT,
-					images);
-		} else {
-			images = LodeRunnerRenderUtil.loadImagesNoSpawnTwoGround(LodeRunnerRenderUtil.LODE_RUNNER_TILE_PATH); // Initializes
-																													// the
-																													// array
-																													// that
-																													// hold
-																													// the
-																													// tile
-																													// images
-			// creates a buffered image from the level to be displayed
-			visualPath = LodeRunnerRenderUtil.createBufferedImage(fullLevel,
-					LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-					LodeRunnerRenderUtil.LODE_RUNNER_ROWS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, images);
-			if (actionSequence != null) {
-
-				LodeRunnerState current = start;
-				int prevTile = fullLevel.get(start.currentY).get(start.currentX);
-				int action_index = 0;
-
-				for (LodeRunnerAction a : actionSequence) {
-					int x = current.currentX;
-					int y = current.currentY;
-					prevTile = fullLevel.get(y).get(x);
-					fullLevel.get(y).set(x, LODE_RUNNER_TILE_SPAWN);
-					try {
-						// creates a buffered image from the level to be displayed
-						visualPath = LodeRunnerRenderUtil.createBufferedImage(fullLevel,
-								LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS
-										* LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-								LodeRunnerRenderUtil.LODE_RUNNER_ROWS
-										* LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
-								images);
-						BufferedImage bi = visualPath;
-						String action_index_string = String.format("%03d", action_index);
-						File outputfile = new File(gifPath + action_index_string + ".png");
-						ImageIO.write(bi, "png", outputfile);
-					} catch (IOException e) {
-					}
-					if (prevTile == LODE_RUNNER_TILE_GOLD) {
-						fullLevel.get(y).set(x, LODE_RUNNER_TILE_EMPTY);
-					} else
-						fullLevel.get(y).set(x, prevTile);
-					action_index++;
-					current = (LodeRunnerState) current.getSuccessor(a);
-				}
-			}
-
+		if(Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
+			images = LodeRunnerRenderUtil.loadIceCreamYouTiles(LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_PATH); //Initializes the array that hold the tile images
+			visualPath = LodeRunnerRenderUtil.createIceCreamYouImage(fullLevel, LodeRunnerRenderUtil.ICE_CREAM_YOU_IMAGE_WIDTH, LodeRunnerRenderUtil.ICE_CREAM_YOU_IMAGE_HEIGHT, images);	
 		}
-		// //creates a buffered image from the level to be displayed
-		// BufferedImage visualPath =
-		// LodeRunnerRenderUtil.createBufferedImage(fullLevel,
-		// LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-		// LodeRunnerRenderUtil.LODE_RUNNER_ROWS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
-		// images);
-
-		// TODO: Make a method like this one that uses the loop below, but creates an
-		// animated gif showing the agent solve the level instead of marking with X
-
-		if (mostRecentVisited != null) {
+		else {
+			images = LodeRunnerRenderUtil.loadImagesNoSpawnTwoGround(LodeRunnerRenderUtil.LODE_RUNNER_TILE_PATH); //Initializes the array that hold the tile images
+			//creates a buffered image from the level to be displayed 
+			visualPath = LodeRunnerRenderUtil.createBufferedImage(fullLevel, LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X, 
+					LodeRunnerRenderUtil.LODE_RUNNER_ROWS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, images);
+		}
+//		//creates a buffered image from the level to be displayed 
+//		BufferedImage visualPath = LodeRunnerRenderUtil.createBufferedImage(fullLevel, LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X, 
+//				LodeRunnerRenderUtil.LODE_RUNNER_ROWS*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, images);
+		if(mostRecentVisited != null) {
 			Graphics2D g = (Graphics2D) visualPath.getGraphics();
-			if (Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
+			if(Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
 				g.setColor(Color.BLACK);
-				g.setStroke(new BasicStroke((float) 3.5));
-			} else
+				g.setStroke(new BasicStroke((float)3.5));
+			}
+			else
 				g.setColor(Color.WHITE);
-			for (LodeRunnerState s : mostRecentVisited) {
+			for(LodeRunnerState s : mostRecentVisited) {
 				int x = s.currentX;
 				int y = s.currentY;
-				if (Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
-					g.drawLine(x * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-							y * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y,
-							(x + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-							(y + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
-					g.drawLine((x + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-							y * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y,
-							x * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-							(y + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
-				} else {
-					g.drawLine(x * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X, y * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
-							(x + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-							(y + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
-					g.drawLine((x + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-							y * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, x * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-							(y + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
+				if(Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
+					g.drawLine(x*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,y*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y,(x+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,(y+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
+					g.drawLine((x+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,y*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y, x*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,(y+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
+				}
+				else {
+					g.drawLine(x*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,y*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,(x+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,(y+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
+					g.drawLine((x+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,y*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, x*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,(y+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
 				}
 			}
-			if (actionSequence != null) {
-				if (Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
+			if(actionSequence != null) {
+				if(Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
 					g.setColor(Color.RED);
-					g.setStroke(new BasicStroke((float) 3.5));
-				} else
+					g.setStroke(new BasicStroke((float)3.5));
+				}
+				else
 					g.setColor(Color.BLUE);
 				LodeRunnerState current = start;
-				for (LodeRunnerAction a : actionSequence) {
+				for(LodeRunnerAction a : actionSequence) {
 					int x = current.currentX;
 					int y = current.currentY;
-					if (Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
-						g.drawLine(x * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-								y * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y,
-								(x + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-								(y + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
-						g.drawLine((x + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-								y * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y,
-								x * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,
-								(y + 1) * LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
-					} else {
-						g.drawLine(x * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-								y * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
-								(x + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-								(y + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
-						g.drawLine((x + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-								y * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,
-								x * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
-								(y + 1) * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
+					if(Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization")) {
+						g.drawLine(x*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,y*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y,(x+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,(y+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
+						g.drawLine((x+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,y*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y, x*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_X,(y+1)*LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_Y);
+					}
+					else {
+						g.drawLine(x*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,y*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y,(x+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,(y+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
+						g.drawLine((x+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,y*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, x*LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,(y+1)*LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y);
 					}
 					current = (LodeRunnerState) current.getSuccessor(a);
 				}
 			}
 		}
 		return visualPath;
+	}
+	
+	/**
+	 * Make an animated gif of traversing the solution path. Save file to disk
+	 * 
+	 * @param level Lode Runner level
+	 * @param mostRecentVisited set of visited states
+	 * @param actionSequence list of actions taken in order
+	 * @param start starting state
+	 * @param gifFile gif file to save
+	 * @throws IOException
+	 */
+	public static void vizualizePathAnimation(List<List<Integer>> level, HashSet<LodeRunnerState> mostRecentVisited,
+			ArrayList<LodeRunnerAction> actionSequence, LodeRunnerState start, String gifFile) throws IOException {
+		List<List<Integer>> fullLevel = ListUtil.deepCopyListOfLists(level); // copies level to draw solution path over it
+		fullLevel.get(start.currentY).set(start.currentX, LODE_RUNNER_TILE_SPAWN);// puts the spawn back into the visualization
+		for (Point p : start.goldLeft) { // puts all the gold back
+			fullLevel.get(p.y).set(p.x, LODE_RUNNER_TILE_GOLD);
+		}
+		final boolean iceCreamYou = Parameters.parameters.booleanParameter("showInteractiveLodeRunnerIceCreamYouVisualization");
+		// Hold tile images for correct visualization style
+		final BufferedImage[] images = iceCreamYou ? 
+				LodeRunnerRenderUtil.loadIceCreamYouTiles(LodeRunnerRenderUtil.ICE_CREAM_YOU_TILE_PATH) :
+					LodeRunnerRenderUtil.loadImagesNoSpawnTwoGround(LodeRunnerRenderUtil.LODE_RUNNER_TILE_PATH);
+
+		// Will generate the image based on either IceCreamYou or standard Lode Runner visualization
+		class GetImage {
+			public BufferedImage run(List<List<Integer>> level) {
+				BufferedImage visualPath = null;
+				try {
+					visualPath = iceCreamYou ? 
+							LodeRunnerRenderUtil.createIceCreamYouImage(fullLevel, LodeRunnerRenderUtil.ICE_CREAM_YOU_IMAGE_WIDTH, 
+									LodeRunnerRenderUtil.ICE_CREAM_YOU_IMAGE_HEIGHT, images) :
+										LodeRunnerRenderUtil.createBufferedImage(fullLevel,
+												LodeRunnerRenderUtil.LODE_RUNNER_COLUMNS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_X,
+												LodeRunnerRenderUtil.LODE_RUNNER_ROWS * LodeRunnerRenderUtil.LODE_RUNNER_TILE_Y, images);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				return visualPath;
+			}
+		}	
+		GetImage ga = new GetImage();
+
+		BufferedImage visualPath = ga.run(fullLevel);
+		if (actionSequence != null) {
+			BufferedImage[] gifImages = new BufferedImage[actionSequence.size() + 1];
+			gifImages[0] = visualPath;
+
+			LodeRunnerState current = start;
+			int prevTile = fullLevel.get(start.currentY).get(start.currentX);
+			int action_index = 1;
+
+			for (LodeRunnerAction a : actionSequence) {
+				int x = current.currentX;
+				int y = current.currentY;
+				prevTile = fullLevel.get(y).get(x);
+				fullLevel.get(y).set(x, LODE_RUNNER_TILE_SPAWN);
+				// creates a buffered image from the level to be displayed
+				visualPath = ga.run(fullLevel);
+				gifImages[action_index] = visualPath;
+
+				if (prevTile == LODE_RUNNER_TILE_GOLD) {
+					fullLevel.get(y).set(x, LODE_RUNNER_TILE_EMPTY);
+				} else
+					fullLevel.get(y).set(x, prevTile);
+				action_index++;
+				current = (LodeRunnerState) current.getSuccessor(a);
+			}
+			
+			AnimationUtil.createGif(gifImages, 3, gifFile);
+		}
+
 	}
 
 	/**
